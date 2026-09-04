@@ -43,7 +43,7 @@
   .app-shell{padding-bottom:88px;}
 
   header{
-    position:sticky;top:0;z-index:20;background:rgba(248,247,252,.9);backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--bg) 90%, transparent);backdrop-filter:blur(8px);
     padding:16px 18px;border-bottom:1px solid var(--line);
     display:flex;justify-content:space-between;align-items:center;
   }
@@ -157,7 +157,7 @@
   body.chart-fs-lock{overflow:hidden;}
 
   /* 토스트 */
-  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:#242233;color:#fff;
     padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;
     transition:opacity .25s,transform .25s;z-index:1000;max-width:88%;text-align:center;box-shadow:0 4px 16px rgba(36,34,51,.2);}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -236,7 +236,7 @@
   /* 내비게이션 (모바일: 하단 / 데스크톱: 좌측) */
   .app-nav{
     position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
-    background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+    background:color-mix(in srgb, var(--surface) 96%, transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);
     display:flex;padding-bottom:env(safe-area-inset-bottom,0);z-index:20;
   }
   .nav-btn{
@@ -382,7 +382,7 @@
           </div>
           <div class="tradingview-widget-container" id="tv-widget-outer"></div>
         </div>
-        <div class="chart-hint">차트 안의 <b>지표(fx)</b> 버튼을 누르면 이동평균선 25·50·100·200, 거래량가중이동평균(VWMA) 100 같은 지표를 원하는 만큼 추가할 수 있어요. 기본으로는 일목구름·RSI·이동평균·거래량이 켜져 있고, 우측 상단 아이콘으로 차트만 크게 볼 수 있어요.</div>
+        <div class="chart-hint">차트 안의 <b>지표(fx)</b> 버튼을 누르면 이동평균선 25·50·100·200, 거래량가중이동평균(VWMA) 100 같은 지표를 원하는 만큼 추가할 수 있어요. 기본으로는 일목구름·RSI·이동평균·거래량이 켜져 있고, 우측 상단 아이콘으로 차트만 크게 볼 수 있어요. 전체화면을 열고 닫아도 추가한 지표는 그대로 유지돼요 (단, 다크모드를 전환하면 차트가 다시 불러와지면서 초기화돼요).</div>
       </div>
     </div>
   </div>
@@ -1189,12 +1189,13 @@ function syncFsHeader(){
 }
 function enterChartFullscreen(){
   if(!selectedSymbol) return;
+  // 차트를 다시 불러오면(reload) 사용자가 추가한 지표/드로잉이 사라지므로,
+  // 위젯을 새로 만들지 않고 기존 요소를 그대로 옮기기만 한다. autosize가 크기 변화를 알아서 처리한다.
   const shell = document.getElementById('tv-chart-shell');
   document.getElementById('chart-fs-slot').appendChild(shell);
   document.getElementById('chart-fs-overlay').classList.add('open');
   document.body.classList.add('chart-fs-lock');
   syncFsHeader();
-  loadTradingViewChart(selectedSymbol);
 }
 function exitChartFullscreen(){
   const shell = document.getElementById('tv-chart-shell');
@@ -1203,7 +1204,6 @@ function exitChartFullscreen(){
   detailBody.insertBefore(shell, hint);
   document.getElementById('chart-fs-overlay').classList.remove('open');
   document.body.classList.remove('chart-fs-lock');
-  if(selectedSymbol) loadTradingViewChart(selectedSymbol);
 }
 document.addEventListener('keydown', function(e){
   if(e.key!=='Escape') return;
@@ -1252,7 +1252,10 @@ function onDarkModeToggle(){
   darkMode = document.getElementById('settings-darkmode').checked;
   saveLocalQuiet('darkMode', darkMode);
   applyTheme();
-  if(selectedSymbol) loadTradingViewChart(selectedSymbol);
+  if(selectedSymbol){
+    loadTradingViewChart(selectedSymbol);
+    showToast('차트 테마를 바꾸면 차트에 추가한 지표는 다시 설정해야 해요.');
+  }
 }
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', themeColor);
@@ -1314,19 +1317,7 @@ function resetAllData(){
   setTimeout(function(){ location.reload(); }, 900);
 }
 
-// ===== 반응형: 모바일 ↔ 데스크톱 전환 시 차트 리로드 =====
-let isDesktopLayout = window.matchMedia('(min-width:880px)').matches;
-let resizeDebounceTimer = null;
-window.addEventListener('resize', function(){
-  clearTimeout(resizeDebounceTimer);
-  resizeDebounceTimer = setTimeout(function(){
-    const nowDesktop = window.matchMedia('(min-width:880px)').matches;
-    if(nowDesktop !== isDesktopLayout){
-      isDesktopLayout = nowDesktop;
-      if(selectedSymbol) loadTradingViewChart(selectedSymbol);
-    }
-  }, 350);
-});
+// ===== 반응형: 차트는 autosize가 알아서 크기를 맞추므로 리로드하지 않는다 (사용자가 추가한 지표 보존) =====
 
 // ===== 정렬/필터 공통 헬퍼 =====
 function populateSymbolFilter(selectId, arr){
