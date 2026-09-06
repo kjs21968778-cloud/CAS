@@ -452,7 +452,7 @@
           </div>
           <div class="tradingview-widget-container" id="tv-widget-outer"></div>
         </div>
-        <div class="chart-hint">차트 안의 <b>지표(fx)</b> 버튼을 누르면 이동평균선 25·50·100·200, 거래량가중이동평균(VWMA) 100 같은 지표를 원하는 만큼 추가할 수 있어요. 기본으로는 일목구름·RSI·이동평균·거래량·Volatility Stop(추세 전환선)이 켜져 있고, 우측 상단 아이콘으로 차트만 크게 볼 수 있어요. 전체화면을 열고 닫아도 추가한 지표는 그대로 유지돼요 (단, 다크모드를 전환하면 차트가 다시 불러와지면서 초기화돼요).</div>
+        <div class="chart-hint">기본값은 일목구름의 <b>Lead 1·Lead 2 선만</b> 켜고(컨버전·베이스·래깅스팬·구름 배경·가격축 라벨은 끔) 거래량만 함께 표시해요. 다만 이 세부 지표 설정은 트레이딩뷰 위젯에서 100% 보장되는 기능은 아니라, 접속 환경에 따라 기본 일목구름 모습 그대로 뜰 수도 있어요. 그럴 땐 지표 이름 옆 <b>톱니바퀴</b> 아이콘 → 모습 탭에서 스크린샷과 똑같이 체크박스만 맞춰주면 돼요. <b>지표(fx)</b> 버튼으로 이동평균선·RSI 등 다른 지표도 자유롭게 추가할 수 있고, 우측 상단 아이콘으로 차트만 크게 볼 수 있어요. 전체화면을 열고 닫아도 추가한 지표는 유지돼요 (다크모드를 전환하면 차트가 다시 불러와지며 초기화돼요).</div>
       </div>
     </div>
   </div>
@@ -1293,7 +1293,17 @@ function loadTradingViewChart(sym){
     hide_side_toolbar:true,
     allow_symbol_change:true,
     save_image:false,
-    studies:['IchimokuCloud@tv-basicstudies','MASimple@tv-basicstudies','RSI@tv-basicstudies','Volume@tv-basicstudies','VSTOP@tv-basicstudies'],
+    studies:['IchimokuCloud@tv-basicstudies','Volume@tv-basicstudies'],
+    studies_overrides: {
+      'ichimoku cloud.conversion line.visible': false,
+      'ichimoku cloud.base line.visible': false,
+      'ichimoku cloud.lagging span.visible': false,
+      'ichimoku cloud.plots background.visible': false,
+      'ichimoku cloud.lead 1.color': darkMode ? '#FFFFFF' : '#26232E',
+      'ichimoku cloud.lead 2.color': darkMode ? '#FFFFFF' : '#26232E',
+      'ichimoku cloud.lead 1.showLabelsOnPriceScale': false,
+      'ichimoku cloud.lead 2.showLabelsOnPriceScale': false
+    },
     locale:'kr',
     support_host:'https://www.tradingview.com'
   });
