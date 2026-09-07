@@ -452,7 +452,7 @@
           </div>
           <div class="tradingview-widget-container" id="tv-widget-outer"></div>
         </div>
-        <div class="chart-hint">기본값은 일목구름의 <b>Lead 1·Lead 2 선만</b> 켜고(컨버전·베이스·래깅스팬·구름 배경·가격축 라벨은 끔) 거래량만 함께 표시해요. 다만 이 세부 지표 설정은 트레이딩뷰 위젯에서 100% 보장되는 기능은 아니라, 접속 환경에 따라 기본 일목구름 모습 그대로 뜰 수도 있어요. 그럴 땐 지표 이름 옆 <b>톱니바퀴</b> 아이콘 → 모습 탭에서 스크린샷과 똑같이 체크박스만 맞춰주면 돼요. <b>지표(fx)</b> 버튼으로 이동평균선·RSI 등 다른 지표도 자유롭게 추가할 수 있고, 우측 상단 아이콘으로 차트만 크게 볼 수 있어요. 전체화면을 열고 닫아도 추가한 지표는 유지돼요 (다크모드를 전환하면 차트가 다시 불러와지며 초기화돼요).</div>
+        <div class="chart-hint">기본으로는 <b>거래량</b>만 표시돼요. 일목구름은 Lead 1·Lead 2 선만 보이게 설정을 시도했지만, 이 위젯에서는 그 설정 때문에 일목구름 자체가 로드되지 않아서 지금은 꺼진 상태로 남아있어요. <b>지표(fx)</b> 버튼으로 일목구름·이동평균선·RSI 등 원하는 지표를 자유롭게 추가할 수 있고, 우측 상단 아이콘으로 차트만 크게 볼 수 있어요. 전체화면을 열고 닫아도, 다크모드를 전환해도 추가한 지표는 그대로 유지돼요. 차트 화면은 항상 다크 테마로 고정돼 있어요.</div>
       </div>
     </div>
   </div>
@@ -1286,8 +1286,8 @@ function loadTradingViewChart(sym){
     symbol:'BINANCE:'+sym+'USDT',
     interval:'D',
     timezone:'Asia/Seoul',
-    theme: darkMode ? 'dark' : 'light',
-    backgroundColor: darkMode ? 'rgba(28,26,36,1)' : 'rgba(255,255,255,1)',
+    theme: 'dark',
+    backgroundColor: 'rgba(28,26,36,1)',
     style:'1',
     withdateranges:true,
     hide_side_toolbar:true,
@@ -1299,8 +1299,8 @@ function loadTradingViewChart(sym){
       'ichimoku cloud.base line.visible': false,
       'ichimoku cloud.lagging span.visible': false,
       'ichimoku cloud.plots background.visible': false,
-      'ichimoku cloud.lead 1.color': darkMode ? '#FFFFFF' : '#26232E',
-      'ichimoku cloud.lead 2.color': darkMode ? '#FFFFFF' : '#26232E',
+      'ichimoku cloud.lead 1.color': '#FFFFFF',
+      'ichimoku cloud.lead 2.color': '#FFFFFF',
       'ichimoku cloud.lead 1.showLabelsOnPriceScale': false,
       'ichimoku cloud.lead 2.showLabelsOnPriceScale': false
     },
@@ -1383,10 +1383,6 @@ function onDarkModeToggle(){
   darkMode = document.getElementById('settings-darkmode').checked;
   saveLocalQuiet('darkMode', darkMode);
   applyTheme();
-  if(selectedSymbol){
-    loadTradingViewChart(selectedSymbol);
-    showToast('차트 테마를 바꾸면 차트에 추가한 지표는 다시 설정해야 해요.');
-  }
 }
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', themeColor);
