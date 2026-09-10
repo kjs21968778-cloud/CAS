@@ -342,6 +342,45 @@
   .quiz-option-btn:disabled{cursor:default;}
   .quiz-option-btn.quiz-correct{background:rgba(46,158,104,.15);border-color:var(--hit);color:var(--hit);font-weight:700;}
   .quiz-option-btn.quiz-wrong{background:rgba(224,56,78,.12);border-color:var(--rise);color:var(--rise);font-weight:700;}
+
+  /* 메인 대시보드 */
+  .dash-grid{display:flex;flex-direction:column;}
+  .dash-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .dash-more-btn{background:none;border:none;color:var(--accent-deep);font-weight:700;font-size:12.5px;cursor:pointer;padding:4px 0;font-family:var(--sans);}
+
+  .dash-hero{
+    background:linear-gradient(135deg, var(--accent-deep), var(--accent));
+    color:#fff;padding:20px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  }
+  .dash-hero-text{flex:1;min-width:0;}
+  .dash-hero-greet{font-size:12.5px;font-weight:700;opacity:.85;margin-bottom:6px;}
+  .dash-hero-title{font-size:19px;font-weight:800;line-height:1.35;letter-spacing:-.2px;}
+  .dash-hero-sub{font-size:13px;opacity:.85;margin-top:6px;line-height:1.5;}
+  .dash-hero-cta{background:#fff;color:var(--accent-deep);margin-top:14px;}
+  .dash-hero-cta:hover{background:#fff;opacity:.9;}
+  .dash-hero-art{width:76px;height:76px;flex:0 0 auto;color:#fff;}
+
+  .dash-row{padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .dash-row:last-child{border-bottom:none;}
+
+  .dash-cat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .dash-cat-row:last-child{margin-bottom:0;}
+  .dash-cat-label{flex:0 0 64px;font-size:12px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dash-cat-bar-track{flex:1;height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+  .dash-cat-bar-fill{height:100%;background:var(--accent);border-radius:4px;}
+  .dash-cat-count{flex:0 0 auto;font-size:12px;font-family:var(--mono);color:var(--ink-dim);min-width:16px;text-align:right;}
+
+  @media (min-width:880px){
+    .dash-grid{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;}
+    .dash-hero-art{width:110px;height:110px;}
+  }
+
+  /* 코인 심볼 빠른 선택 칩 (매매일지/분석노트 - 관심 코인에서 바로 선택, 입력란 포커스시에만 표시) */
+  .symbol-chip-row{display:none;flex-wrap:wrap;gap:6px;margin:-2px 0 10px;}
+  .symbol-chip-row.open{display:flex;}
+  .symbol-chip{background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:800;font-family:var(--sans);cursor:pointer;white-space:nowrap;}
+  .symbol-chip:active{transform:scale(.95);background:var(--accent-soft);color:var(--accent-deep);border-color:var(--accent);}
+  .symbol-chip-hint{font-size:12px;color:var(--ink-dim);margin:-2px 0 10px;}
 </style>
 
 <script>
@@ -363,7 +402,11 @@
 
 <nav class="app-nav" id="app-nav">
   <div class="app-nav-panel">
-  <button class="nav-btn active" data-tab="market" onclick="switchTab('market')">
+  <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>대시보드</span>
+  </button>
+  <button class="nav-btn" data-tab="market" onclick="switchTab('market')">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>
     <span>시세</span>
   </button>
@@ -411,8 +454,96 @@
   </div>
 </header>
 
+<!-- 메인 대시보드 탭 -->
+<div id="tab-dashboard" class="tab-content active">
+  <div class="dash-grid">
+    <div class="dash-main">
+      <div class="card dash-hero">
+        <div class="dash-hero-text">
+          <div class="dash-hero-greet" id="dash-greet">오늘도 화이팅이에요</div>
+          <div class="dash-hero-title">코인 공부, 오늘도 기록해볼까요?</div>
+          <div class="dash-hero-sub">꾸준한 기록이 쌓이면 나만의 매매 습관이 보여요.</div>
+          <button class="btn dash-hero-cta" onclick="switchTab('market')">오늘의 시세</button>
+        </div>
+        <svg class="dash-hero-art" viewBox="0 0 140 140" aria-hidden="true">
+          <rect x="10" y="76" width="12" height="34" rx="3" fill="currentColor" opacity=".2"/>
+          <rect x="30" y="56" width="12" height="54" rx="3" fill="currentColor" opacity=".3"/>
+          <rect x="50" y="86" width="12" height="24" rx="3" fill="currentColor" opacity=".2"/>
+          <circle cx="96" cy="60" r="38" fill="currentColor" opacity=".12"/>
+          <circle cx="96" cy="60" r="28" fill="none" stroke="currentColor" stroke-width="2.5" opacity=".9"/>
+          <text x="96" y="69" text-anchor="middle" font-size="24" font-weight="700" fill="currentColor">₿</text>
+        </svg>
+      </div>
+
+      <div class="study-grid">
+        <div class="study-card" onclick="switchTab('study')">
+          <svg class="study-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <div class="study-card-label">학습 노트</div>
+          <div class="study-card-count" id="dash-stat-studynotes">0개</div>
+        </div>
+        <div class="study-card" onclick="switchTab('analysis')">
+          <svg class="study-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <div class="study-card-label">분석 노트</div>
+          <div class="study-card-count" id="dash-stat-analysis">0건</div>
+        </div>
+        <div class="study-card" onclick="switchTab('journal')">
+          <svg class="study-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <div class="study-card-label">매매 기록</div>
+          <div class="study-card-count" id="dash-stat-trades">0건</div>
+        </div>
+        <div class="study-card" onclick="switchTab('calc')">
+          <svg class="study-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+          <div class="study-card-label">계산기</div>
+          <div class="study-card-count">손익 · 손절 계산</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="dash-card-head">
+          <div class="section-title" style="margin-bottom:0;">다가오는 일정</div>
+          <button type="button" class="dash-more-btn" onclick="switchTab('calendar')">전체 일정</button>
+        </div>
+        <div id="dash-events"></div>
+      </div>
+    </div>
+
+    <div class="dash-side">
+      <div class="card">
+        <div class="section-title" style="display:flex;align-items:center;gap:6px;">
+          <span class="live-dot"></span> 관심 코인 시세
+        </div>
+        <div id="dash-watchlist"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">학습 현황</div>
+        <div class="summary-row">
+          <svg width="64" height="64" viewBox="0 0 64 64" style="flex:0 0 auto;">
+            <circle cx="32" cy="32" r="27" fill="none" stroke="var(--line)" stroke-width="7"/>
+            <circle id="dash-ring-fg" cx="32" cy="32" r="27" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            <text id="dash-ring-text" x="32" y="37" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">-</text>
+          </svg>
+          <div class="summary-stats">
+            <div class="result-row"><span class="label">퀴즈 정답률</span><span class="value" id="dash-quiz-detail">-</span></div>
+            <div class="summary-note">저장한 학습 노트로 만든 퀴즈 성적이에요.</div>
+          </div>
+        </div>
+        <div id="dash-cat-bars" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="dash-card-head">
+          <div class="section-title" style="margin-bottom:0;">최근 학습 노트</div>
+          <button type="button" class="dash-more-btn" onclick="switchTab('study')">전체 보기</button>
+        </div>
+        <div id="dash-notes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 시세 탭 -->
-<div id="tab-market" class="tab-content active">
+<div id="tab-market" class="tab-content">
   <div class="market-grid">
     <div class="market-left">
       <div class="card">
@@ -469,15 +600,16 @@
     <div class="card">
       <div class="section-title">매매 기록</div>
       <div class="row" style="margin-bottom:8px;">
-        <input type="text" id="trade-symbol" aria-label="코인 티커" placeholder="코인 (예: BTC)" autocapitalize="characters" maxlength="12">
+        <input type="text" id="trade-symbol" aria-label="코인 티커" placeholder="코인 (예: BTC)" autocapitalize="characters" maxlength="12" onfocus="showSymbolChips('trade-symbol-chips')" onblur="hideSymbolChipsDelayed('trade-symbol-chips')">
         <select id="trade-type" style="flex:0 0 92px;" aria-label="매수 또는 매도">
           <option value="buy">매수</option>
           <option value="sell">매도</option>
         </select>
       </div>
+      <div class="symbol-chip-row" id="trade-symbol-chips"></div>
       <div class="row" style="margin-bottom:8px;">
-        <input type="number" id="trade-price" placeholder="가격(USDT)" step="any" inputmode="decimal">
-        <input type="number" id="trade-qty" placeholder="수량" step="any" inputmode="decimal">
+        <input type="text" oninput="sanitizeNumericInput(this)" id="trade-price" placeholder="가격(USDT)" step="any" inputmode="decimal">
+        <input type="text" oninput="sanitizeNumericInput(this)" id="trade-qty" placeholder="수량" step="any" inputmode="decimal">
       </div>
       <div style="margin-bottom:8px;">
         <input type="date" id="trade-date">
@@ -531,13 +663,13 @@
       <div class="section-title">일일 시드 기록</div>
       <input type="date" id="seed-date" style="margin-bottom:8px;">
       <div class="row" style="margin-bottom:8px;">
-        <input type="number" id="seed-before" placeholder="매매 전 총 시드" step="any" inputmode="decimal">
-        <input type="number" id="seed-entry-amount" placeholder="단타 진입 금액" step="any" inputmode="decimal">
+        <input type="text" oninput="sanitizeNumericInput(this)" id="seed-before" placeholder="매매 전 총 시드" step="any" inputmode="decimal">
+        <input type="text" oninput="sanitizeNumericInput(this)" id="seed-entry-amount" placeholder="단타 진입 금액" step="any" inputmode="decimal">
       </div>
-      <input type="number" id="seed-after" placeholder="매매 후 총 시드" step="any" inputmode="decimal" style="margin-bottom:8px;">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="seed-after" placeholder="매매 후 총 시드" step="any" inputmode="decimal" style="margin-bottom:8px;">
       <div class="row" style="margin-bottom:8px;">
-        <input type="number" id="seed-withdrawal" placeholder="출금 (선택)" step="any" inputmode="decimal">
-        <input type="number" id="seed-deposit" placeholder="입금 (선택)" step="any" inputmode="decimal">
+        <input type="text" oninput="sanitizeNumericInput(this)" id="seed-withdrawal" placeholder="출금 (선택)" step="any" inputmode="decimal">
+        <input type="text" oninput="sanitizeNumericInput(this)" id="seed-deposit" placeholder="입금 (선택)" step="any" inputmode="decimal">
       </div>
       <textarea id="seed-memo" placeholder="메모 (선택)" rows="2" maxlength="500" style="margin-bottom:10px;"></textarea>
       <button type="button" class="media-picker-btn" onclick="pickMedia('seed')">📎 사진·동영상 추가</button>
@@ -573,9 +705,10 @@
   <div class="card">
     <div class="section-title">분석 노트 작성</div>
     <div class="row" style="margin-bottom:8px;">
-      <input type="text" id="analysis-symbol" aria-label="관련 코인" placeholder="코인 (선택, 예: BTC)" autocapitalize="characters" maxlength="12">
+      <input type="text" id="analysis-symbol" aria-label="관련 코인" placeholder="코인 (선택, 예: BTC)" autocapitalize="characters" maxlength="12" onfocus="showSymbolChips('analysis-symbol-chips')" onblur="hideSymbolChipsDelayed('analysis-symbol-chips')">
       <input type="date" id="analysis-date" style="flex:0 0 150px;">
     </div>
+    <div class="symbol-chip-row" id="analysis-symbol-chips"></div>
     <select id="analysis-direction" aria-label="예상 방향" style="margin-bottom:8px;">
       <option value="up">📈 상승 예상</option>
       <option value="down">📉 하락 예상</option>
@@ -657,12 +790,12 @@
   <div class="card">
     <div class="section-title">손익 계산기</div>
     <div class="row" style="margin-bottom:8px;">
-      <input type="number" id="calc-buy" placeholder="매수가" step="any" inputmode="decimal">
-      <input type="number" id="calc-sell" placeholder="매도가(현재가)" step="any" inputmode="decimal">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="calc-buy" placeholder="매수가" step="any" inputmode="decimal">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="calc-sell" placeholder="매도가(현재가)" step="any" inputmode="decimal">
     </div>
     <div class="row" style="margin-bottom:8px;">
-      <input type="number" id="calc-qty" placeholder="수량" step="any" inputmode="decimal">
-      <input type="number" id="calc-fee" placeholder="수수료 %(편도)" step="any" inputmode="decimal" value="0.1">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="calc-qty" placeholder="수량" step="any" inputmode="decimal">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="calc-fee" placeholder="수수료 %(편도)" step="any" inputmode="decimal" value="0.1">
     </div>
     <div class="field-error" id="calc-error"></div>
     <button class="btn full" onclick="calcPnl()">계산하기</button>
@@ -681,10 +814,10 @@
       <button type="button" class="btn secondary active" id="loss-side-long" onclick="setLossSide('long')">매수(롱) 진입</button>
       <button type="button" class="btn secondary" id="loss-side-short" onclick="setLossSide('short')">매도(숏) 진입</button>
     </div>
-    <input type="number" id="loss-entry" placeholder="진입 가격" step="any" inputmode="decimal" style="margin-bottom:8px;">
+    <input type="text" oninput="sanitizeNumericInput(this)" id="loss-entry" placeholder="진입 가격" step="any" inputmode="decimal" style="margin-bottom:8px;">
     <div class="row" style="margin-bottom:8px;">
-      <input type="number" id="loss-amount" placeholder="고정 손실 비용 (USDT)" step="any" inputmode="decimal">
-      <input type="number" id="loss-qty" placeholder="수량" step="any" inputmode="decimal">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="loss-amount" placeholder="고정 손실 비용 (USDT)" step="any" inputmode="decimal">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="loss-qty" placeholder="수량" step="any" inputmode="decimal">
     </div>
     <label class="toggle-row" style="margin-bottom:8px;">
       <span class="toggle-label">수수료 반영</span>
@@ -694,7 +827,7 @@
       </span>
     </label>
     <div id="loss-fee-input-row" style="display:none;margin-bottom:8px;">
-      <input type="number" id="loss-fee-pct" placeholder="편도 수수료 % (거래소마다 달라요)" step="any" inputmode="decimal" value="0.1">
+      <input type="text" oninput="sanitizeNumericInput(this)" id="loss-fee-pct" placeholder="편도 수수료 % (거래소마다 달라요)" step="any" inputmode="decimal" value="0.1">
     </div>
     <div class="field-error" id="loss-error"></div>
     <button class="btn full" onclick="calcFixedLoss()">손절가 계산하기</button>
@@ -842,6 +975,23 @@ function loadLocal(key, defVal){
   return memoryStore[key] !== undefined ? memoryStore[key] : defVal;
 }
 
+// ===== 숫자 입력 검증 (매매일지·계산기: 한글/문자/기호 입력 차단) =====
+function sanitizeNumericInput(el){
+  const before = el.value;
+  const selStart = el.selectionStart;
+  let cleaned = before.replace(/[^0-9.]/g, '');
+  const dotIndex = cleaned.indexOf('.');
+  if(dotIndex !== -1){
+    cleaned = cleaned.slice(0, dotIndex+1) + cleaned.slice(dotIndex+1).replace(/\./g, '');
+  }
+  if(cleaned !== before){
+    const diff = before.length - cleaned.length;
+    el.value = cleaned;
+    const newPos = Math.max(0, selStart - diff);
+    el.setSelectionRange(newPos, newPos);
+  }
+}
+
 // ===== 일정 기본값 (BLS·BEA·Census 공식 발표 일정, 2026년 9~12월 기준) =====
 function officialEconomicEvents(){
   return [
@@ -942,6 +1092,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelector('.nav-btn[data-tab="'+tab+'"]').classList.add('active');
+  if(tab==='dashboard') renderDashboard();
 }
 
 // ===== 포맷 =====
@@ -1115,11 +1266,65 @@ function applyTickerUpdate(sym, price, changePct){
     renderWatchlist();
   }
   if(selectedSymbol === sym) updateDetailPrice();
+  const dashWrap = document.getElementById('dash-price-wrap-'+sym);
+  if(dashWrap){
+    const dPriceEl = dashWrap.querySelector('.coin-price');
+    const dChangeEl = dashWrap.querySelector('.coin-change');
+    if(dPriceEl) dPriceEl.textContent = '$'+formatPrice(price);
+    if(dChangeEl){
+      dChangeEl.textContent = (changePct>=0?'+':'')+changePct.toFixed(2)+'%';
+      dChangeEl.className = 'coin-change '+(changePct>=0?'up':'down');
+    }
+  }
 }
 
 // ===== 워치리스트 =====
+function renderSymbolChips(containerId, inputId){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  if(watchlist.length===0){
+    el.innerHTML = '<div class="symbol-chip-hint">시세 탭에서 관심 코인을 추가하면 여기서 바로 선택할 수 있어요.</div>';
+    return;
+  }
+  el.innerHTML = watchlist.map(function(sym){
+    return '<button type="button" class="symbol-chip" onclick="selectSymbolChip(\''+inputId+'\',\''+sym+'\',\''+containerId+'\')">'+sym+'</button>';
+  }).join('');
+}
+function showSymbolChips(containerId){
+  const el = document.getElementById(containerId);
+  if(el) el.classList.add('open');
+}
+function hideSymbolChips(containerId){
+  const el = document.getElementById(containerId);
+  if(el) el.classList.remove('open');
+}
+function hideSymbolChipsDelayed(containerId){
+  setTimeout(function(){ hideSymbolChips(containerId); }, 150);
+}
+const SYMBOL_CHIP_FIELDS = [
+  {input:'trade-symbol', chips:'trade-symbol-chips'},
+  {input:'analysis-symbol', chips:'analysis-symbol-chips'}
+];
+document.addEventListener('pointerdown', function(e){
+  SYMBOL_CHIP_FIELDS.forEach(function(f){
+    const chipRow = document.getElementById(f.chips);
+    const input = document.getElementById(f.input);
+    if(!chipRow || !input) return;
+    if(chipRow.classList.contains('open') && e.target!==input && !chipRow.contains(e.target)){
+      chipRow.classList.remove('open');
+    }
+  });
+});
+function selectSymbolChip(inputId, sym, chipsId){
+  const input = document.getElementById(inputId);
+  if(!input) return;
+  input.value = sym;
+  if(chipsId) hideSymbolChips(chipsId);
+}
 function renderWatchlist(){
   const el = document.getElementById('watchlist-list');
+  renderSymbolChips('trade-symbol-chips', 'trade-symbol');
+  renderSymbolChips('analysis-symbol-chips', 'analysis-symbol');
   if(watchlist.length===0){
     el.innerHTML = '<div class="empty">아직 관심 코인이 없어요.<br>위에서 코인을 추가해보세요.</div>';
     return;
@@ -1704,7 +1909,7 @@ function deleteMediaBlob(id){
   }).catch(function(){});
 }
 
-let stagedMedia = { trade: [], seed: [] };
+let stagedMedia = { trade: [], seed: [], analysis: [] };
 
 function pickMedia(context){
   const input = document.getElementById('media-input-'+context);
@@ -2746,6 +2951,113 @@ function answerQuiz(selectedIndex){
   document.getElementById('quiz-body').appendChild(nextBtn);
 }
 
+// ===== 메인 대시보드 =====
+function dashGreeting(){
+  const h = new Date().getHours();
+  if(h < 5) return '늦은 밤이네요';
+  if(h < 12) return '좋은 아침이에요';
+  if(h < 18) return '오늘도 화이팅이에요';
+  return '오늘 하루도 수고 많았어요';
+}
+function renderDashboard(){
+  const greetEl = document.getElementById('dash-greet');
+  if(!greetEl) return;
+  greetEl.textContent = dashGreeting();
+
+  document.getElementById('dash-stat-studynotes').textContent = studyNotes.length+'개';
+
+  const decidedAnalysis = analysisNotes.filter(function(n){ return n.outcome==='hit' || n.outcome==='miss'; }).length;
+  const hitAnalysis = analysisNotes.filter(function(n){ return n.outcome==='hit'; }).length;
+  document.getElementById('dash-stat-analysis').textContent = analysisNotes.length===0 ? '0건'
+    : (decidedAnalysis>0 ? analysisNotes.length+'건 · 적중 '+hitAnalysis+'건' : analysisNotes.length+'건');
+
+  const closed = buildClosedTrades();
+  const tstats = computeTradeStats(closed);
+  document.getElementById('dash-stat-trades').textContent = closed.length>0
+    ? closed.length+'건 완료 · 승률 '+Math.round(tstats.winRate)+'%'
+    : trades.length+'건 기록';
+
+  const quizPct = quizStats.total>0 ? Math.round(quizStats.correct/quizStats.total*100) : null;
+
+  // 학습 현황 링 (분석노트 탭의 적중률 링과 동일한 계산식: 둘레 = 2πr, r=27)
+  const circumference = 2*Math.PI*27;
+  const ringFg = document.getElementById('dash-ring-fg');
+  const ringText = document.getElementById('dash-ring-text');
+  if(ringFg && ringText){
+    const pct = quizPct===null ? 0 : quizPct;
+    const offset = quizPct===null ? circumference : circumference*(1-pct/100);
+    ringFg.setAttribute('stroke-dasharray', circumference.toFixed(1));
+    ringFg.setAttribute('stroke-dashoffset', offset.toFixed(1));
+    ringText.textContent = quizPct===null ? '-' : pct+'%';
+  }
+  const quizDetailEl = document.getElementById('dash-quiz-detail');
+  if(quizDetailEl) quizDetailEl.textContent = quizStats.total>0 ? (quizStats.correct+' / '+quizStats.total+'문제') : '아직 푼 퀴즈가 없어요';
+
+  // 카테고리별 학습 노트 수 (최댓값 대비 비율 막대 — 목표치가 없으므로 상대 비교만 표시)
+  const catCounts = STUDY_CATEGORIES.map(function(c){
+    return { label:c.label, count: studyNotes.filter(function(n){ return n.category===c.id; }).length };
+  });
+  const maxCatCount = catCounts.reduce(function(m,c){ return Math.max(m,c.count); }, 1);
+  const catEl = document.getElementById('dash-cat-bars');
+  if(catEl){
+    catEl.innerHTML = catCounts.map(function(c){
+      const pct = Math.round(c.count/maxCatCount*100);
+      return '<div class="dash-cat-row">'
+        + '<div class="dash-cat-label">'+c.label+'</div>'
+        + '<div class="dash-cat-bar-track"><div class="dash-cat-bar-fill" style="width:'+pct+'%"></div></div>'
+        + '<div class="dash-cat-count">'+c.count+'</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  // 다가오는 일정 (최대 3개)
+  const evEl = document.getElementById('dash-events');
+  if(evEl){
+    const todayStr = todayLocalISO();
+    const upcoming = events.filter(function(e){ return e.date>=todayStr; })
+      .sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(0,3);
+    evEl.innerHTML = upcoming.length ? upcoming.map(function(e){
+      const d = dDayLabel(e.date);
+      const isToday = d==='D-DAY';
+      return '<div class="dash-row" onclick="switchTab(\'calendar\')">'
+        + '<div><span class="dday-chip'+(isToday?' today':'')+'">'+d+'</span> <span class="tag cat-'+e.category+'">'+(CATEGORY_LABEL[e.category]||'기타')+'</span></div>'
+        + '<div class="event-title" style="font-size:14px;margin-top:6px;">'+escapeHtml(e.title)+'</div>'
+        + '</div>';
+    }).join('') : '<div class="empty">다가오는 일정이 없어요.</div>';
+  }
+
+  // 관심 코인 시세 (최대 5개, 실시간 갱신은 applyTickerUpdate에서 처리)
+  const wlEl = document.getElementById('dash-watchlist');
+  if(wlEl){
+    wlEl.innerHTML = watchlist.length ? watchlist.slice(0,5).map(function(sym){
+      const d = priceData[sym];
+      const priceStr = d ? '$'+formatPrice(d.price) : '-';
+      const changeStr = d ? (d.changePct>=0?'+':'')+d.changePct.toFixed(2)+'%' : '';
+      const cls = d ? (d.changePct>=0?'up':'down') : '';
+      return '<div class="coin-item" tabindex="0" onclick="switchTab(\'market\');selectSymbol(\''+sym+'\')">'
+        + '<div class="coin-left"><div class="coin-symbol">'+sym+'</div></div>'
+        + '<div class="coin-price-wrap" id="dash-price-wrap-'+sym+'">'
+        + '<div class="coin-price">'+priceStr+'</div>'
+        + '<div class="coin-change '+cls+'">'+changeStr+'</div>'
+        + '</div></div>';
+    }).join('') : '<div class="empty">관심 코인을 추가하면 여기에 표시돼요.</div>';
+  }
+
+  // 최근 학습 노트 (최대 3개)
+  const notesEl = document.getElementById('dash-notes');
+  if(notesEl){
+    const recentNotes = studyNotes.slice().sort(function(a,b){ return (b.updatedAt||b.date).localeCompare(a.updatedAt||a.date); }).slice(0,3);
+    notesEl.innerHTML = recentNotes.length ? recentNotes.map(function(n){
+      const flat = (n.content||'').replace(/\n/g,' ');
+      const preview = flat ? escapeHtml(flat.slice(0,40))+(flat.length>40?'...':'') : '';
+      return '<div class="dash-row" onclick="switchTab(\'study\');openNoteEditor(\''+n.id+'\')">'
+        + '<div class="study-note-title" style="font-size:14.5px;">'+escapeHtml(n.title||'제목 없음')+'</div>'
+        + (preview ? '<div class="study-note-preview">'+preview+'</div>' : '')
+        + '</div>';
+    }).join('') : '<div class="empty">아직 학습 노트가 없어요.<br>공부 탭에서 첫 노트를 남겨보세요.</div>';
+  }
+}
+
 // ===== 초기화 =====
 applyAppName();
 applyTheme();
@@ -2759,6 +3071,7 @@ renderAnalysisNotes();
 renderEvents();
 renderSeedLog();
 renderStudyGrid();
+renderDashboard();
 updateDetailVisibility();
 if(selectedSymbol){ updateDetailPrice(); loadTradingViewChart(selectedSymbol); }
 startPolling();
