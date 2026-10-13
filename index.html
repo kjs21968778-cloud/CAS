@@ -626,6 +626,10 @@
   .pt-tpsl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
   .pt-tpsl-row input{font-size:14px;font-family:var(--mono);padding:9px 10px;}
   .pt-margin-input-row input{font-size:15px;}
+  .pt-margin-slider-row{margin-bottom:4px;}
+  .pt-margin-slider-row .pt-leverage-value{font-size:14px;white-space:nowrap;}
+  .pt-margin-slider-row .pt-leverage-label{min-width:0;}
+  .pt-margin-slider-row .pt-leverage-value.over{color:var(--rise);}
 
   .pt-preview-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;}
   .pt-preview-row span:first-child{color:var(--ink-dim);}
@@ -661,7 +665,24 @@
   .pt-list-sub{font-size:12px;color:var(--ink-dim);font-family:var(--mono);}
   .pt-list-net{font-family:var(--mono);font-weight:800;font-size:14.5px;font-variant-numeric:tabular-nums;}
   .tag.pt-liq{background:var(--ink);color:var(--surface);}
+  .pt-orders-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;}
+  .pt-cancel-all{white-space:nowrap;flex:0 0 auto;background:var(--surface2);border:1px solid var(--line);color:var(--rise);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+  .pt-plan{margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface2);}
+  .pt-plan-title{font-size:12px;font-weight:700;color:var(--ink-dim);margin-bottom:4px;}
+  .pt-close-custom{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px;}
+  .pt-close-custom .pt-pct-wrap{position:relative;}
+  .pt-close-custom input{width:100%;font-size:14px;font-family:var(--mono);padding:9px 28px 9px 10px;min-width:0;box-sizing:border-box;}
+  .pt-close-custom .pt-pct-suffix{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--ink-dim);font-size:13px;pointer-events:none;}
+  .pt-close-custom button{background:var(--surface2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+  .pt-summary-sub{font-size:11px;font-weight:500;color:var(--ink-dim);font-family:var(--sans);}
+  .pt-sl-warn{display:block;font-size:11px;font-weight:700;color:var(--rise);margin-top:2px;}
   .pt-cancel-btn{background:var(--surface2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-top:10px;}
+  .pt-ord-tpsl{margin-top:10px;}
+  .pt-ord-tpsl .pt-tpsl-edit{margin-bottom:0;}
+  .pt-ord-bulk{margin:0 0 12px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface2);}
+  .pt-ord-bulk .pt-tpsl-edit{margin-bottom:8px;}
+  .pt-ord-clear{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+  .pt-link-btn{background:none;border:none;padding:0;color:var(--accent-deep);font-weight:700;text-decoration:underline;cursor:pointer;font-size:inherit;font-family:inherit;}
 
   .pt-rules{margin-top:14px;font-size:12.5px;color:var(--ink-dim);line-height:1.7;}
   .pt-rules summary{cursor:pointer;font-weight:700;color:var(--ink-dim);font-size:13px;}
@@ -1046,6 +1067,11 @@
           <label for="pt-margin-input">증거금 (USDT)</label>
           <input type="text" id="pt-margin-input" placeholder="0" inputmode="decimal" oninput="sanitizeNumericInput(this);renderPtOrderPreviewFromInput()">
         </div>
+        <div class="pt-leverage-row pt-margin-slider-row">
+          <span class="pt-leverage-label">증거금 비율 (잔고 기준)</span>
+          <span class="pt-leverage-value" id="pt-margin-pct-display">0%</span>
+        </div>
+        <input type="range" class="pt-leverage-slider" id="pt-margin-slider" min="0" max="100" step="1" value="0" aria-label="증거금 비율(%)" oninput="setPtMarginSlider(this.value)">
         <div class="pt-percent-row">
           <button type="button" onclick="setPtMarginPercent(25)">25%</button>
           <button type="button" onclick="setPtMarginPercent(50)">50%</button>
@@ -1098,6 +1124,8 @@
       <li>수수료는 시장가 0.06%, 지정가 0.02%로 계산하고, 진입과 청산 때 각각 포지션 크기에 부과돼요. 펀딩비와 슬리피지는 반영하지 않아요.</li>
       <li>청산가는 유지증거금율 0.4%를 적용한 단순 계산식이에요. 강제청산되면 해당 포지션의 증거금은 전부 사라져요.</li>
       <li>익절·손절은 시세가 지정 가격에 닿는 순간 그 가격으로 체결된 것으로 처리해요. 지정가 주문은 시세가 지정가에 닿으면 체결돼요.</li>
+      <li>지정가 주문은 개수 제한 없이 여러 개를 걸 수 있어요(잔고가 허락하는 만큼). 주문마다 증거금과 수수료가 예약되고, 익절·손절도 주문별로 따로 설정할 수 있어요. 주문이 체결되면 그 익절·손절이 포지션에 적용돼요.</li>
+      <li>앱을 닫았다 다시 열었을 때처럼 가격이 한 번에 크게 움직였으면, 롱은 높은 가격부터 숏은 낮은 가격부터 가격이 지나간 순서대로 손절·청산·지정가 체결을 처리해요. 그래서 손절가보다 바깥에 걸어 둔 지정가는 손절이 먼저 일어난 뒤 새 포지션으로 체결돼요.</li>
       <li>시세는 바이낸스 BTCUSDT 현물 가격을 따라가요. 이 페이지를 열어둔 동안에만 청산·익절·손절·지정가 체결이 확인돼요.</li>
     </ul>
   </details>
@@ -1581,7 +1609,7 @@ let paperAccounts = loadLocal('paperAccounts', null);
 if(!paperAccounts || !Array.isArray(paperAccounts) || paperAccounts.length===0){
   paperAccounts = [{
     id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5,
-    createdAt:Date.now(), isDefault:true, position:null, history:[]
+    createdAt:Date.now(), isDefault:true, position:null, orders:[], history:[]
   }];
   saveLocalQuiet('paperAccounts', paperAccounts);
 }
@@ -3884,6 +3912,8 @@ const PT_MIN_NOTIONAL = 5;        // 최소 주문 크기(포지션 크기) 5 US
 const PT_MAX_LEVERAGE = 125;
 const PT_LEVERAGE_PRESETS = [1, 3, 5, 10, 20, 50, 100, 125];
 const PT_HISTORY_LIMIT = 300;
+const PT_DUST_NOTIONAL = 1;        // 부분 청산 후 남는 포지션 크기가 이 값(USDT)보다 작으면 전부 청산
+const PT_STALE_MS = 20000;        // 시세가 이 시간(ms) 넘게 갱신 안 되면 주문·청산을 막음
 
 let ptBtc = { price:null, changePct:null, ts:0 };
 let ptWs = null;
@@ -3920,9 +3950,111 @@ function ptMergedPosition(pos, side, price, margin, leverage){
   const entry = (pos.entry * pos.qty + price * qty) / totalQty;
   return { side:side, entry:entry, qty:totalQty, margin:totalMargin, leverage:(totalQty * entry) / totalMargin };
 }
+function ptOrdersOf(acc){
+  return Array.isArray(acc && acc.orders) ? acc.orders : [];
+}
+function ptReservedTotal(acc){
+  return ptOrdersOf(acc).reduce(function(sum, o){ return sum + (o.reserved || 0); }, 0);
+}
+function ptNewOrderId(){
+  return 'o' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36);
+}
+// 지정가가 가격에 닿는 순서(현재가에서 가까운 것부터)로 정렬한 주문 목록
+function ptOrdersInFillOrder(orders, side){
+  return orders.slice().sort(function(a, b){ return side === 'long' ? b.price - a.price : a.price - b.price; });
+}
+// 미체결 주문이 전부 체결됐다고 가정했을 때의 합산 포지션 (분할 매수·매도 계획 확인용)
+// extra: 지금 넣으려는 주문 { kind:'market'|'limit', side, price, margin, leverage, tp, sl } (선택)
+function ptSimulatePlan(acc, extra){
+  const orders = ptOrdersOf(acc).slice();
+  let pos = acc.position ? { side:acc.position.side, entry:acc.position.entry, qty:acc.position.qty, margin:acc.position.margin, leverage:acc.position.leverage } : null;
+  let tp = acc.position ? acc.position.tp : null, sl = acc.position ? acc.position.sl : null;
+  if(extra && extra.kind === 'market'){
+    pos = ptMergedPosition(pos, extra.side, extra.price, extra.margin, extra.leverage);
+    if(extra.tp) tp = extra.tp;
+    if(extra.sl) sl = extra.sl;
+  }else if(extra && extra.kind === 'limit'){
+    orders.push(extra);
+  }
+  if(!pos && orders.length === 0) return null;
+  const side = orders.length ? orders[0].side : pos.side;
+  ptOrdersInFillOrder(orders, side).forEach(function(o){
+    pos = ptMergedPosition(pos, o.side, o.price, o.margin, o.leverage);
+    if(o.tp) tp = o.tp;
+    if(o.sl) sl = o.sl;
+  });
+  return { pos:pos, tp:tp || null, sl:sl || null, liq:ptPosLiq(pos), count:orders.length };
+}
+// 분할 주문 중, 앞선 체결로 생긴 포지션의 청산가보다 바깥(롱: 아래, 숏: 위)에 있는 주문 목록.
+// 그 가격에 닿기 전에 청산되면 이 주문은 (청산 뒤) 새 포지션으로 체결됨. extra: 아직 넣기 전의 주문(선택)
+function ptLadderLiqFlags(acc, extra){
+  const orders = ptOrdersOf(acc).slice();
+  if(extra) orders.push(extra);
+  if(!orders.length) return [];
+  const side = orders[0].side;
+  let pos = acc.position ? { side:acc.position.side, entry:acc.position.entry, qty:acc.position.qty, margin:acc.position.margin, leverage:acc.position.leverage } : null;
+  const flagged = [];
+  ptOrdersInFillOrder(orders, side).forEach(function(o){
+    if(pos){
+      const liq = ptPosLiq(pos);
+      if(side === 'long' ? o.price <= liq : o.price >= liq){ flagged.push(o); pos = null; }
+    }
+    pos = ptMergedPosition(pos, o.side, o.price, o.margin, o.leverage);
+  });
+  return flagged;
+}
+// 손절가가 청산가 안쪽인지 (지금 포지션 → 미체결 주문이 체결되는 순서대로) 단계별로 확인. 처음 어긋나는 단계를 돌려주고, 없으면 null
+function ptSlConflictAhead(acc){
+  let pos = acc.position ? { side:acc.position.side, entry:acc.position.entry, qty:acc.position.qty, margin:acc.position.margin, leverage:acc.position.leverage } : null;
+  let sl = acc.position ? acc.position.sl : null;
+  if(pos && sl && !ptSlIsEffective(pos.side, sl, ptPosLiq(pos))) return { orderPrice:null, sl:sl, liq:ptPosLiq(pos) };
+  const orders = ptOrdersOf(acc);
+  if(!orders.length) return null;
+  let found = null;
+  ptOrdersInFillOrder(orders, orders[0].side).forEach(function(o){
+    pos = ptMergedPosition(pos, o.side, o.price, o.margin, o.leverage);
+    if(o.sl) sl = o.sl;
+    if(!found && sl && !ptSlIsEffective(o.side, sl, ptPosLiq(pos))) found = { orderPrice:o.price, sl:sl, liq:ptPosLiq(pos) };
+  });
+  return found;
+}
+// 분할 청산한 거래는 한 번의 거래로 셈: 같은 포지션(방향 + 최초 진입 시각)의 청산 기록을 합산하고,
+// 마지막 청산까지 끝난 포지션만 집계 (아직 열려 있는 포지션의 부분 청산 기록은 제외)
+function ptTradeStats(history){
+  const groups = {};
+  (history || []).forEach(function(h){
+    const key = h.posId || (h.side + ':' + h.openedAt);   // 예전 기록은 posId가 없으므로 방향 + 최초 진입 시각으로 구분
+    const g = groups[key] || (groups[key] = { net:0, closed:false, partialRows:0 });
+    g.net += h.net;
+    if(h.partial) g.partialRows++; else g.closed = true;
+  });
+  const out = { total:0, wins:0, partialRows:0, openPartialRows:0 };
+  Object.keys(groups).forEach(function(k){
+    const g = groups[k];
+    if(g.closed){ out.total++; if(g.net > 0) out.wins++; out.partialRows += g.partialRows; }
+    else out.openPartialRows += g.partialRows;
+  });
+  return out;
+}
+// 지정가 주문 가격이 손절가보다 바깥이면(롱: 손절가 이하, 숏: 손절가 이상) 손절이 먼저 일어나 이 주문은 새 포지션으로 체결됨.
+// 해당하는 손절가를 돌려주고, 없으면 null
+function ptLimitBeyondSl(acc, side, ref, newSl){
+  const sls = [];
+  if(acc.position && acc.position.side === side && acc.position.sl) sls.push(acc.position.sl);
+  ptOrdersOf(acc).forEach(function(o){ if(o.side === side && o.sl) sls.push(o.sl); });
+  if(newSl) sls.push(newSl);
+  const hit = sls.filter(function(x){ return side === 'long' ? x >= ref : x <= ref; });
+  if(!hit.length) return null;
+  return side === 'long' ? Math.max.apply(null, hit) : Math.min.apply(null, hit);
+}
+// 손절가가 청산가보다 바깥이면(손절 전에 청산) 손절은 작동하지 않음
+function ptSlIsEffective(side, sl, liq){
+  if(!sl) return true;
+  return side === 'long' ? sl > liq : sl < liq;
+}
 function ptAccountEquity(acc, price){
   let eq = acc.balance;
-  if(acc.pending) eq += acc.pending.reserved;
+  eq += ptReservedTotal(acc);
   if(acc.position){
     eq += acc.position.margin;
     if(price) eq += calcPtPnl(acc.position.side, acc.position.entry, price, acc.position.qty);
@@ -3963,12 +4095,12 @@ function ptFmtTime(ts){
 function normalizePaperAccounts(){
   if(!Array.isArray(paperAccounts) || paperAccounts.length === 0){
     paperAccounts = [{ id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5,
-      createdAt:Date.now(), isDefault:true, position:null, history:[] }];
+      createdAt:Date.now(), isDefault:true, position:null, orders:[], history:[] }];
   }
   paperAccounts = paperAccounts.filter(function(a){ return a && typeof a === 'object' && a.id; });
   if(paperAccounts.length === 0){
     paperAccounts = [{ id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5,
-      createdAt:Date.now(), isDefault:true, position:null, history:[] }];
+      createdAt:Date.now(), isDefault:true, position:null, orders:[], history:[] }];
   }
   paperAccounts.forEach(function(a, i){
     if(typeof a.name !== 'string' || !a.name) a.name = '계좌 ' + (i+1);
@@ -3983,7 +4115,10 @@ function normalizePaperAccounts(){
         ['entry', 'exit', 'qty', 'margin', 'leverage', 'pnl', 'fee', 'net', 'openedAt', 'closedAt'].every(function(k){ return Number.isFinite(h[k]); });
     });
     if(!a.position || typeof a.position !== 'object') a.position = null;
-    if(!a.pending || typeof a.pending !== 'object') a.pending = null;
+    // 예전 버전은 미체결 주문을 1개(pending)만 저장했음 → 여러 개를 담는 orders 목록으로 옮김
+    if(!Array.isArray(a.orders)) a.orders = [];
+    if(a.pending && typeof a.pending === 'object') a.orders.push(a.pending);
+    delete a.pending;
     // 숫자가 깨진 포지션·주문은 사용할 수 없으므로, 돌려받을 수 있는 증거금만 잔고로 되돌리고 정리
     if(a.position){
       const q = a.position;
@@ -3995,21 +4130,25 @@ function normalizePaperAccounts(){
         if(!(q.leverage >= 1) || !isFinite(q.leverage)) q.leverage = (q.qty * q.entry) / q.margin;
         if(!Number.isFinite(q.feePaid)) q.feePaid = 0;
         if(!Number.isFinite(q.openedAt)) q.openedAt = Date.now();
+        if(!(q.entries >= 1)) q.entries = 1;
+        if(typeof q.id !== 'string' || !q.id) q.id = q.side + ':' + q.openedAt;   // 예전 포지션: 기존 거래 내역과 같은 묶음 키
       }
     }
-    if(a.pending){
-      const o = a.pending;
+    const usedIds = {};
+    a.orders = a.orders.filter(function(o){
+      if(!o || typeof o !== 'object') return false;
       const okOrd = (o.side === 'long' || o.side === 'short') && o.price > 0 && o.margin > 0 && isFinite(o.price) && isFinite(o.margin);
-      if(!okOrd){ if(o.reserved > 0 && isFinite(o.reserved)) a.balance += o.reserved; a.pending = null; }
-      else{
-        if(!(o.tp > 0)) o.tp = null;
-        if(!(o.sl > 0)) o.sl = null;
-        if(!(o.leverage >= 1) || !isFinite(o.leverage)) o.leverage = a.leverage;
-        if(!Number.isFinite(o.fee)) o.fee = 0;
-        if(!Number.isFinite(o.reserved)) o.reserved = o.margin + o.fee;
-        if(!Number.isFinite(o.createdAt)) o.createdAt = Date.now();
-      }
-    }
+      if(!okOrd){ if(o.reserved > 0 && isFinite(o.reserved)) a.balance += o.reserved; return false; }
+      if(!(o.tp > 0)) o.tp = null;
+      if(!(o.sl > 0)) o.sl = null;
+      if(!(o.leverage >= 1) || !isFinite(o.leverage)) o.leverage = a.leverage;
+      if(!Number.isFinite(o.fee)) o.fee = 0;
+      if(!Number.isFinite(o.reserved)) o.reserved = o.margin + o.fee;
+      if(!Number.isFinite(o.createdAt)) o.createdAt = Date.now();
+      if(typeof o.id !== 'string' || !o.id || usedIds[o.id]) o.id = ptNewOrderId() + Object.keys(usedIds).length;
+      usedIds[o.id] = true;
+      return true;
+    });
     a.isDefault = (i === 0);
   });
   if(!paperAccounts.some(function(a){ return a.id === paperCurrentAccountId; })){
@@ -4025,7 +4164,7 @@ function savePaperState(){
   saveLocal('paperCurrentAccountId', paperCurrentAccountId);
 }
 function ptHasOpenOrders(){
-  return paperAccounts.some(function(a){ return a.position || a.pending; });
+  return paperAccounts.some(function(a){ return a.position || ptOrdersOf(a).length > 0; });
 }
 
 function switchPaperAccount(id){
@@ -4066,7 +4205,7 @@ function addPaperAccount(){
   const acc = {
     id:'acc-' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36),
     name:'계좌 ' + n, balance:amount, initialBalance:amount, leverage:5,
-    createdAt:Date.now(), isDefault:false, position:null, pending:null, history:[]
+    createdAt:Date.now(), isDefault:false, position:null, orders:[], history:[]
   };
   paperAccounts.push(acc);
   paperCurrentAccountId = acc.id;
@@ -4080,7 +4219,7 @@ function deletePaperAccount(id){
   if(!acc) return;
   if(acc.isDefault){ showToast('첫 번째 계좌는 삭제할 수 없어요. 대신 초기화할 수 있어요.'); return; }
   let msg = acc.name + '을(를) 삭제할까요? 잔고, 포지션, 거래 내역이 모두 사라지고 되돌릴 수 없어요.';
-  if(acc.position || acc.pending) msg = acc.name + '에 열려 있는 포지션이나 미체결 주문이 있어요.\n' + msg;
+  if(acc.position || ptOrdersOf(acc).length > 0) msg = acc.name + '에 열려 있는 포지션이나 미체결 주문이 있어요.\n' + msg;
   if(!window.confirm(msg)) return;
   paperAccounts = paperAccounts.filter(function(a){ return a.id !== id; });
   if(paperCurrentAccountId === id) paperCurrentAccountId = paperAccounts[0].id;
@@ -4095,7 +4234,7 @@ function resetPaperAccount(){
   if(!window.confirm(msg)) return;
   acc.balance = acc.initialBalance;
   acc.position = null;
-  acc.pending = null;
+  acc.orders = [];
   acc.history = [];
   ptTpslDirty = false;
   savePaperState();
@@ -4194,10 +4333,12 @@ function setPtFeedStatus(){
 function ptAddOrMergePosition(acc, side, price, margin, leverage, fee, tp, sl){
   const merged = ptMergedPosition(acc.position, side, price, margin, leverage);
   if(!acc.position){
-    acc.position = { side:side, entry:price, qty:merged.qty, margin:margin, leverage:leverage,
-      tp:tp || null, sl:sl || null, feePaid:fee, openedAt:Date.now() };
+    acc.position = { id:'p' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36),
+      side:side, entry:price, qty:merged.qty, margin:margin, leverage:leverage,
+      tp:tp || null, sl:sl || null, feePaid:fee, openedAt:Date.now(), entries:1 };
   }else{
     const pos = acc.position;
+    pos.entries = (pos.entries >= 1 ? pos.entries : 1) + 1;   // 분할 진입 횟수
     pos.entry = merged.entry;
     pos.qty = merged.qty;
     pos.margin = merged.margin;
@@ -4232,7 +4373,8 @@ function closePtPosition(acc, pct, exitPrice, reason){
     id:'h' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36),
     side:pos.side, entry:pos.entry, exit:exitPrice, qty:qty, margin:margin, leverage:pos.leverage,
     pnl:pnl, fee:openFee + closeFee, net:net, reason:reason, partial:ratio < 1,
-    openedAt:pos.openedAt, closedAt:Date.now()
+    openedAt:pos.openedAt, closedAt:Date.now(), entries:(pos.entries >= 1 ? pos.entries : 1),
+    posId:pos.id || (pos.side + ':' + pos.openedAt)
   };
   acc.history.unshift(rec);
   if(acc.history.length > PT_HISTORY_LIMIT) acc.history.length = PT_HISTORY_LIMIT;
@@ -4251,44 +4393,79 @@ function ptReasonLabel(rec){
   if(rec.reason === 'sl') return '손절';
   return rec.partial ? '부분 청산' : '수동 청산';
 }
-function ptFillPending(acc){
-  const o = acc.pending;
-  if(!o) return;
-  acc.pending = null;   // 증거금과 수수료는 주문할 때 이미 잔고에서 빠져 있음
+function ptFillOrder(acc, o){
+  acc.orders = acc.orders.filter(function(x){ return x !== o; });   // 증거금과 수수료는 주문할 때 이미 잔고에서 빠져 있음
   ptAddOrMergePosition(acc, o.side, o.price, o.margin, o.leverage, o.fee, o.tp, o.sl);
+}
+// 계좌 하나의 지정가 체결·손절·청산·익절을 확인.
+// 앱을 닫았다 다시 열었을 때처럼 가격이 한 번에 크게 움직였으면 여러 가격대를 한꺼번에 지나쳤을 수 있으므로,
+// 가격이 실제로 지나갔을 순서(롱은 높은 가격부터, 숏은 낮은 가격부터)대로 하나씩 처리한다.
+// 예) 롱 포지션의 손절가(95,000)가 지정가(90,000)보다 위에 있으면: 손절이 먼저 일어나 기존 포지션이 정리되고,
+//     그 뒤에 지정가가 새 포지션으로 체결된다. (지정가를 먼저 합쳐서 손절가에 파는 계산은 없던 이익이 생기는 오류)
+const PT_EVENT_RANK = { sl:0, liq:1, fill:2 };   // 같은 가격이면 손절·청산이 지정가 체결보다 먼저
+function ptProcessAccount(acc, price, notes){
+  const tag = '[' + acc.name + '] ';
+  let group = [];
+  let anyFill = false;
+  const flush = function(){
+    if(!group.length) return;
+    notes.push(tag + '지정가 ' + (group[0].side === 'long' ? '매수' : '매도') + ' ' + (group.length > 1 ? group.length + '건 ' : '') + '체결 (' +
+      group.map(function(o){ return formatPrice(o.price); }).join(' · ') + ')');
+    group = [];
+  };
+  for(let guard = 0; guard < 100000; guard++){
+    const pos = acc.position;
+    const orders = ptOrdersOf(acc);
+    const side = pos ? pos.side : (orders.length ? orders[0].side : null);
+    if(!side) break;
+    const isLong = side === 'long';
+    let best = null;
+    const take = function(kind, level, order){
+      const earlier = !best || (isLong ? level > best.level : level < best.level) ||
+        (level === best.level && PT_EVENT_RANK[kind] < PT_EVENT_RANK[best.kind]);
+      if(earlier) best = { kind:kind, level:level, order:order };
+    };
+    let liq = null;
+    if(pos){
+      liq = ptPosLiq(pos);
+      if(pos.sl && ptSlIsEffective(side, pos.sl, liq) && (isLong ? price <= pos.sl : price >= pos.sl)) take('sl', pos.sl);
+      if(isLong ? price <= liq : price >= liq) take('liq', liq);
+    }
+    orders.forEach(function(o){
+      if(isLong ? price <= o.price : price >= o.price) take('fill', o.price, o);
+    });
+    if(!best) break;
+    if(best.kind === 'fill'){
+      ptFillOrder(acc, best.order);
+      group.push(best.order);
+      anyFill = true;
+      continue;
+    }
+    flush();
+    const sideName = isLong ? '롱' : '숏';
+    if(best.kind === 'sl'){
+      const rec = closePtPosition(acc, 100, pos.sl, 'sl');
+      notes.push(tag + '손절가 도달: ' + sideName + ' 청산 (' + ptSigned(rec.net) + ' USDT)');
+    }else{
+      closePtPosition(acc, 100, liq, 'liq');
+      notes.push(tag + sideName + ' 포지션이 강제청산됐어요 (청산가 ' + formatPrice(liq) + ')');
+    }
+  }
+  flush();
+  const p0 = acc.position;
+  if(!p0) return;
+  if(anyFill && !ptSlIsEffective(p0.side, p0.sl, ptPosLiq(p0))){
+    notes.push(tag + '평균 진입가가 바뀌어 손절가(' + formatPrice(p0.sl) + ')가 청산가(' + formatPrice(ptPosLiq(p0)) + ')보다 멀어졌어요. 손절가를 다시 설정해주세요.');
+  }
+  if(p0.tp && (p0.side === 'long' ? price >= p0.tp : price <= p0.tp)){
+    const rec = closePtPosition(acc, 100, p0.tp, 'tp');
+    notes.push(tag + '익절가 도달: ' + (p0.side === 'long' ? '롱' : '숏') + ' 청산 (' + ptSigned(rec.net) + ' USDT)');
+  }
 }
 // 모든 계좌의 지정가 체결·청산·익절·손절을 확인. 변경이 있으면 알림 문구 배열을 반환
 function processPtTriggers(price){
   const notes = [];
-  paperAccounts.forEach(function(acc){
-    if(acc.pending){
-      const o = acc.pending;
-      const hit = (o.side === 'long') ? price <= o.price : price >= o.price;
-      if(hit){
-        ptFillPending(acc);
-        notes.push('[' + acc.name + '] 지정가 ' + (o.side === 'long' ? '매수' : '매도') + ' 체결 (' + formatPrice(o.price) + ')');
-      }
-    }
-    const pos = acc.position;
-    if(!pos) return;
-    const liq = ptPosLiq(pos);
-    const isLong = pos.side === 'long';
-    const slValid = pos.sl && (isLong ? pos.sl > liq : pos.sl < liq);
-    const slHit = slValid && (isLong ? price <= pos.sl : price >= pos.sl);
-    const liqHit = isLong ? price <= liq : price >= liq;
-    const tpHit = pos.tp && (isLong ? price >= pos.tp : price <= pos.tp);
-    const sideName = isLong ? '롱' : '숏';
-    if(slHit){
-      const rec = closePtPosition(acc, 100, pos.sl, 'sl');
-      notes.push('[' + acc.name + '] 손절가 도달: ' + sideName + ' 청산 (' + ptSigned(rec.net) + ' USDT)');
-    }else if(liqHit){
-      closePtPosition(acc, 100, liq, 'liq');
-      notes.push('[' + acc.name + '] ' + sideName + ' 포지션이 강제청산됐어요 (청산가 ' + formatPrice(liq) + ')');
-    }else if(tpHit){
-      const rec = closePtPosition(acc, 100, pos.tp, 'tp');
-      notes.push('[' + acc.name + '] 익절가 도달: ' + sideName + ' 청산 (' + ptSigned(rec.net) + ' USDT)');
-    }
-  });
+  paperAccounts.forEach(function(acc){ ptProcessAccount(acc, price, notes); });
   return notes;
 }
 function updatePaperTradingTick(){
@@ -4306,7 +4483,7 @@ function updatePaperTradingTick(){
 
 // ---------- 레버리지 / 증거금 입력 ----------
 function ptLeverageLocked(acc){
-  return !!(acc.position || acc.pending);
+  return !!(acc.position || ptOrdersOf(acc).length > 0);
 }
 function setPtLeverage(v){
   const acc = getCurrentPaperAccount();
@@ -4326,12 +4503,41 @@ function setPtLeverage(v){
 function ptEntryFeeRate(){
   return ptOrderType === 'limit' ? PT_MAKER_FEE : PT_FEE_RATE;
 }
+// 지금 잔고로 넣을 수 있는 최대 증거금 (진입 수수료까지 포함해서 잔고를 넘지 않게)
+function ptMaxMargin(acc){
+  return acc.balance / (1 + acc.leverage * ptEntryFeeRate());
+}
 function setPtMarginPercent(pct){
   const acc = getCurrentPaperAccount();
-  const maxMargin = acc.balance / (1 + acc.leverage * ptEntryFeeRate());   // 수수료까지 포함해서 잔고를 넘지 않게
-  const margin = Math.floor(maxMargin * pct / 100 * 100) / 100;
+  const margin = Math.floor(ptMaxMargin(acc) * pct / 100 * 100) / 100;
   ptEl('pt-margin-input').value = margin > 0 ? String(margin) : '';
   renderPtOrderPreviewFromInput();
+}
+// 슬라이더로 증거금 비율(0~100%) 조절. 0이면 입력칸을 비움
+let ptMarginSliderDriving = false;
+function setPtMarginSlider(v){
+  const pct = parseFloat(v);
+  ptMarginSliderDriving = true;   // 슬라이더를 움직이는 중에는 슬라이더 위치를 다시 덮어쓰지 않음
+  try{ setPtMarginPercent(Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0); }
+  finally{ ptMarginSliderDriving = false; }
+}
+// 입력칸의 증거금이 바뀌면(직접 입력·25/50/75/100% 버튼 등) 슬라이더와 % 표시를 맞춤
+function renderPtMarginSlider(){
+  const slider = ptEl('pt-margin-slider'), disp = ptEl('pt-margin-pct-display');
+  if(!slider || !disp) return;
+  const acc = getCurrentPaperAccount();
+  const maxMargin = ptMaxMargin(acc);
+  if(!(maxMargin > 0)){
+    slider.disabled = true; slider.value = 0;
+    disp.textContent = '-'; disp.classList.remove('over');
+    return;
+  }
+  slider.disabled = false;
+  const margin = ptReadNumber('pt-margin-input') || 0;
+  const pct = margin / maxMargin * 100;
+  disp.textContent = (Math.round(pct * 10) / 10) + '%' + (pct > 100.0001 ? ' 초과' : '');
+  disp.classList.toggle('over', pct > 100.0001);
+  if(!ptMarginSliderDriving) slider.value = String(Math.min(100, Math.round(pct)));
 }
 function setPtOrderType(type){
   ptOrderType = (type === 'limit') ? 'limit' : 'market';
@@ -4347,6 +4553,12 @@ function fillPtLimitCurrent(){
   if(!ptBtc.price){ showToast('현재 시세를 아직 받아오지 못했어요.'); return; }
   ptEl('pt-limit-input').value = String(Math.round(ptBtc.price * 100) / 100);
   renderPtOrderPreviewFromInput();
+}
+function ptPriceStaleMsg(){
+  if(!ptBtc.price) return '현재 BTC 시세를 아직 받아오지 못했어요. 잠시 후 다시 시도해주세요.';
+  const age = Date.now() - (ptBtc.ts || 0);
+  if(age > PT_STALE_MS) return '시세가 ' + Math.round(age / 1000) + '초 동안 갱신되지 않았어요. 연결이 복구된 뒤 다시 시도해주세요. (오래된 가격으로 체결되는 걸 막기 위해서예요)';
+  return null;
 }
 function ptReadNumber(id){
   const v = parseFloat(ptEl(id).value);
@@ -4381,7 +4593,8 @@ function ptValidateTpSl(side, ref, tp, sl, liq){
 function openPtPosition(side){
   const acc = getCurrentPaperAccount();
   const price = ptBtc.price;
-  if(!price){ showToast('현재 BTC 시세를 아직 받아오지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
+  const staleMsg = ptPriceStaleMsg();
+  if(staleMsg){ showToast(staleMsg); return; }
   const isLimit = ptOrderType === 'limit';
   const margin = ptReadNumber('pt-margin-input');
   if(!margin){ showToast('증거금(USDT)을 입력해주세요.'); return; }
@@ -4402,7 +4615,7 @@ function openPtPosition(side){
     showToast('이미 ' + (acc.position.side === 'long' ? '롱' : '숏') + ' 포지션이 있어요. 반대 방향으로 진입하려면 먼저 청산해주세요.');
     return;
   }
-  if(acc.pending && acc.pending.side !== side){
+  if(ptOrdersOf(acc).length && acc.orders[0].side !== side){
     showToast('반대 방향 미체결 주문이 있어요. 먼저 취소해주세요.');
     return;
   }
@@ -4410,7 +4623,6 @@ function openPtPosition(side){
   if(isLimit){
     const limit = ptReadNumber('pt-limit-input');
     if(!limit){ showToast('지정가를 입력해주세요.'); return; }
-    if(acc.pending){ showToast('미체결 주문은 계좌당 1개만 걸 수 있어요. 기존 주문을 취소한 뒤 다시 주문해주세요.'); return; }
     if(side === 'long' && limit >= price){ showToast('매수 지정가는 현재가(' + formatPrice(price) + ')보다 낮게 설정해주세요. 바로 사려면 시장가를 이용해주세요.'); return; }
     if(side === 'short' && limit <= price){ showToast('매도 지정가는 현재가(' + formatPrice(price) + ')보다 높게 설정해주세요. 바로 팔려면 시장가를 이용해주세요.'); return; }
     ref = limit;
@@ -4421,23 +4633,30 @@ function openPtPosition(side){
   const mergedLiq = ptPosLiq(merged);
   const tpslMsg = ptValidateTpSl(side, ref, tp, sl, mergedLiq);
   if(tpslMsg){ showToast(tpslMsg); return; }
-  // 평균 진입가가 바뀌면 청산가도 바뀜: 새 손절가를 안 넣었다면 기존 손절가가 여전히 청산가보다 안쪽인지 확인
-  if(acc.position && !sl && acc.position.sl){
-    const oldSl = acc.position.sl;
-    if(side === 'long' ? oldSl <= mergedLiq : oldSl >= mergedLiq){
-      showToast('추가하면 평균 진입가가 바뀌어 청산가가 ' + formatPrice(mergedLiq) + '이(가) 돼요. 기존 손절가(' + formatPrice(oldSl) + ')가 청산가보다 멀어져서 작동하지 않아요. 손절가를 새로 입력하거나 기존 손절가를 먼저 조정해주세요.');
-      return;
-    }
+  // 분할 진입: 이 주문까지(그리고 이미 걸려 있는 지정가가 전부 체결되면) 평균 진입가·청산가가 바뀜
+  // → 그때도 손절가가 청산가보다 안쪽인지 확인 (아니면 손절이 작동하지 않고 청산이 먼저 됨)
+  const plan = ptSimulatePlan(acc, { kind:(isLimit ? 'limit' : 'market'), side:side, price:ref, margin:margin, leverage:lev, tp:tp, sl:sl });
+  if(plan && plan.sl && !ptSlIsEffective(side, plan.sl, plan.liq)){
+    showToast('이 주문까지 반영하면 평균 진입가가 바뀌어 청산가가 ' + formatPrice(plan.liq) + '이(가) 돼요. 손절가(' + formatPrice(plan.sl) + ')가 청산가보다 멀어져서 작동하지 않아요. 손절가를 새로 입력하거나 기존 손절가를 먼저 조정해주세요.');
+    return;
   }
 
   if(isLimit){
     acc.balance -= (margin + fee);
-    acc.pending = { side:side, price:ref, margin:margin, leverage:lev, fee:fee, reserved:margin + fee,
+    if(!Array.isArray(acc.orders)) acc.orders = [];
+    let oid = ptNewOrderId();
+    while(acc.orders.some(function(x){ return x.id === oid; })) oid = ptNewOrderId();   // 취소·체결을 id로 찾으므로 겹치면 안 됨
+    const newOrder = { id:oid, side:side, price:ref, margin:margin, leverage:lev, fee:fee, reserved:margin + fee,
       tp:tp || null, sl:sl || null, createdAt:Date.now() };
+    const ladderFlag = ptLadderLiqFlags(acc, newOrder).indexOf(newOrder) >= 0;   // 추가하기 전 목록 기준으로 이 주문이 청산가 바깥인지
+    acc.orders.push(newOrder);
     savePaperState();
     renderPaperTrading();
     setPtBottomTab('orders');
-    showToast(sideName + ' 지정가 주문을 걸었어요. (' + formatPrice(ref) + ')');
+    const beyond = ptLimitBeyondSl(acc, side, ref, null);
+    showToast(sideName + ' 지정가 주문을 걸었어요. (' + formatPrice(ref) + ')' + (acc.orders.length > 1 ? ' · 미체결 ' + acc.orders.length + '건' : '') +
+      (beyond ? ' · 주의: 손절가(' + formatPrice(beyond) + ')보다 바깥이라 손절이 먼저 일어나요' : '') +
+      (ladderFlag ? ' · 주의: 앞선 체결로 생길 포지션의 청산가보다 바깥이라, 그 전에 청산되면 청산 뒤 새 포지션으로 체결돼요' : ''));
     return;
   }
   acc.balance -= (margin + fee);
@@ -4451,20 +4670,32 @@ function openPtPosition(side){
   setPtBottomTab('position');
   showToast(sideName + ' 포지션을 열었어요. (' + formatPrice(price) + ' · ' + ptLev(acc.position.leverage) + ')');
 }
-function cancelPtPending(){
+function cancelPtOrder(id){
   const acc = getCurrentPaperAccount();
-  if(!acc.pending) return;
-  acc.balance += acc.pending.reserved;
-  acc.pending = null;
+  const o = ptOrdersOf(acc).find(function(x){ return x.id === id; });
+  if(!o) return;
+  acc.balance += o.reserved;
+  acc.orders = acc.orders.filter(function(x){ return x !== o; });
   savePaperState();
   renderPaperTrading();
   showToast('미체결 주문을 취소했어요. 증거금과 수수료를 돌려받았어요.');
+}
+function cancelAllPtOrders(){
+  const acc = getCurrentPaperAccount();
+  const n = ptOrdersOf(acc).length;
+  if(!n) return;
+  acc.balance += ptReservedTotal(acc);
+  acc.orders = [];
+  savePaperState();
+  renderPaperTrading();
+  showToast('미체결 주문 ' + n + '건을 모두 취소했어요. 증거금과 수수료를 돌려받았어요.');
 }
 function closePtPercent(pct){
   const acc = getCurrentPaperAccount();
   const price = ptBtc.price;
   if(!acc.position){ return; }
-  if(!price){ showToast('현재 BTC 시세를 아직 받아오지 못했어요.'); return; }
+  const staleMsg = ptPriceStaleMsg();
+  if(staleMsg){ showToast(staleMsg); return; }
   // 직전 틱 이후 청산 조건에 걸렸는지 먼저 확인
   const notes = processPtTriggers(price);
   if(notes.length){
@@ -4473,12 +4704,25 @@ function closePtPercent(pct){
     showToast(notes[0]);
     return;
   }
-  const rec = closePtPosition(acc, pct, price, 'manual');
+  // 청산하고 남는 포지션이 너무 작으면(찌꺼기) 전부 청산
+  let usePct = pct, dust = false;
+  if(pct < 100 && acc.position.qty * acc.position.entry * (1 - pct / 100) < PT_DUST_NOTIONAL){ usePct = 100; dust = true; }
+  const rec = closePtPosition(acc, usePct, price, 'manual');
   if(!rec) return;
   ptTpslDirty = false;
   savePaperState();
   renderPaperTrading();
-  showToast(ptReasonLabel(rec) + ' 완료: ' + ptSigned(rec.net) + ' USDT (수수료 포함)');
+  showToast(ptReasonLabel(rec) + ' 완료: ' + ptSigned(rec.net) + ' USDT (수수료 포함)' +
+    (dust ? ' · 남는 수량이 너무 작아 전부 청산했어요' : (acc.position ? ' · 남은 수량 ' + ptQty(acc.position.qty) + ' BTC' : '')));
+}
+// 직접 입력한 비율(%)만큼 시장가로 청산 (분할 매도). 현재 남아 있는 수량 기준
+function closePtCustom(){
+  const el = ptEl('pt-close-pct');
+  const v = parseFloat(el ? el.value : '');
+  if(!(v > 0)){ showToast('청산할 비율(%)을 입력해주세요.'); return; }
+  if(v < 1){ showToast('청산 비율은 1% 이상으로 입력해주세요.'); return; }
+  if(v > 100){ showToast('청산 비율은 100%를 넘을 수 없어요.'); return; }
+  closePtPercent(v);
 }
 function applyPtTpSl(){
   const acc = getCurrentPaperAccount();
@@ -4493,12 +4737,125 @@ function applyPtTpSl(){
   if((tp !== null && !(tp > 0)) || (sl !== null && !(sl > 0))){ showToast('익절가와 손절가는 0보다 큰 숫자로 입력해주세요.'); return; }
   const msg = ptValidateTpSl(pos.side, price, tp, sl, ptPosLiq(pos));
   if(msg){ showToast(msg); return; }
+  // 걸려 있는 지정가가 체결돼 평균 진입가가 바뀌면 청산가가 올라와 이 손절가가 작동하지 않게 되는 경우도 막음
+  if(sl !== null){
+    const c = ptSlConflictAhead({ position:Object.assign({}, pos, { tp:tp, sl:sl }), orders:ptOrdersOf(acc) });
+    if(c && c.sl === sl){
+      showToast('미체결 지정가' + (c.orderPrice ? '(' + formatPrice(c.orderPrice) + ')' : '') + '가 체결되면 청산가가 ' + formatPrice(c.liq) + '이(가) 돼서 이 손절가(' + formatPrice(sl) + ')가 작동하지 않아요. 손절가를 안쪽으로 정하거나 해당 주문을 취소해주세요.');
+      return;
+    }
+  }
   pos.tp = tp;
   pos.sl = sl;
   ptTpslDirty = false;
   savePaperState();
   renderPaperTrading();
   showToast(tp === null && sl === null ? '익절·손절 설정을 해제했어요.' : '익절·손절을 적용했어요.');
+}
+
+// ---------- 미체결 주문의 익절·손절 ----------
+// 주문이 체결되면 그 주문의 익절·손절이 포지션에 적용됨 (비워 둔 주문은 기존 설정을 그대로 둠)
+// 이 주문이 체결되는 시점(현재가에서 가까운 순서)까지의 합산 포지션 → 그때의 청산가 계산용
+function ptPlanPosAtOrder(acc, target){
+  const orders = ptOrdersOf(acc);
+  let pos = acc.position ? { side:acc.position.side, entry:acc.position.entry, qty:acc.position.qty, margin:acc.position.margin, leverage:acc.position.leverage } : null;
+  const side = target.side;
+  const seq = ptOrdersInFillOrder(orders, side);
+  for(let i = 0; i < seq.length; i++){
+    pos = ptMergedPosition(pos, seq[i].side, seq[i].price, seq[i].margin, seq[i].leverage);
+    if(seq[i] === target) break;
+  }
+  return pos;
+}
+// targets 주문들에 tp/sl(null이면 건드리지 않음)을 넣어도 되는지 확인. 문제가 있으면 안내 문구, 없으면 null
+function ptValidateOrderTpSl(acc, targets, tp, sl){
+  for(let i = 0; i < targets.length; i++){
+    const t = targets[i];
+    const msg = ptValidateTpSl(t.side, t.price, tp, sl, ptPosLiq(ptPlanPosAtOrder(acc, t)));
+    if(msg) return (targets.length > 1 ? '[' + formatPrice(t.price) + ' 주문] ' : '') + msg;
+  }
+  return null;
+}
+// 새 손절가보다 바깥(롱: 아래, 숏: 위)에 걸린 다른 지정가 개수 — 손절이 먼저 일어난 뒤에 새 포지션으로 체결되는 주문
+function ptOrdersBeyondSl(acc, source, sl){
+  if(!sl) return 0;
+  return ptOrdersOf(acc).filter(function(x){
+    return x !== source && x.side === source.side && (source.side === 'long' ? x.price <= sl : x.price >= sl);
+  }).length;
+}
+let ptOrdTpslDirty = {};
+let ptOrdRenderedAcc = null;
+function ptMarkOrdDirty(el){
+  const box = el.closest('.pt-ord-tpsl');
+  if(box && box.dataset.id) ptOrdTpslDirty[box.dataset.id] = true;
+}
+function ptParseTpSlInputs(tpRaw, slRaw){
+  const tp = tpRaw === '' ? null : parseFloat(tpRaw);
+  const sl = slRaw === '' ? null : parseFloat(slRaw);
+  if((tp !== null && !(tp > 0)) || (sl !== null && !(sl > 0))) return null;
+  return { tp:tp, sl:sl };
+}
+// 새 익절가가 그 주문이 체결되는 시점의 평균 진입가보다 불리하면(롱: 이하, 숏: 이상) 익절돼도 손실
+function ptTpLossNote(acc, orders, tp){
+  if(!tp) return '';
+  const bad = orders.filter(function(o){
+    const p = ptPlanPosAtOrder(acc, o);
+    return o.side === 'long' ? tp <= p.entry : tp >= p.entry;
+  });
+  return bad.length ? ' · 주의: 익절가가 체결 시점의 평균 진입가보다 불리해서 익절돼도 손실이에요 (평균 진입가 기준으로 정해주세요)' : '';
+}
+function ptBeyondNote(acc, orders){
+  const n = orders.reduce(function(sum, o){ return sum + ptOrdersBeyondSl(acc, o, o.sl); }, 0);
+  return n ? ' · 주의: 손절가보다 바깥에 걸린 지정가가 있어요. 손절이 먼저 일어난 뒤에 새 포지션으로 체결될 수 있어요' : '';
+}
+// 주문 하나의 익절·손절 적용 (비우고 적용하면 해제)
+function applyPtOrderTpSl(btn){
+  const box = btn.closest('.pt-ord-tpsl');
+  if(!box) return;
+  const acc = getCurrentPaperAccount();
+  const o = ptOrdersOf(acc).find(function(x){ return x.id === box.dataset.id; });
+  if(!o) return;
+  const v = ptParseTpSlInputs(box.querySelector('.ord-tp').value.trim(), box.querySelector('.ord-sl').value.trim());
+  if(!v){ showToast('익절가와 손절가는 0보다 큰 숫자로 입력해주세요.'); return; }
+  const msg = ptValidateOrderTpSl(acc, [o], v.tp, v.sl);
+  if(msg){ showToast(msg); return; }
+  o.tp = v.tp;
+  o.sl = v.sl;
+  delete ptOrdTpslDirty[o.id];
+  savePaperState();
+  renderPaperTrading();
+  showToast((v.tp === null && v.sl === null ? '이 주문의 익절·손절 설정을 해제했어요.' : '이 주문의 익절·손절을 설정했어요. 체결되면 포지션에 적용돼요.') + ptBeyondNote(acc, [o]) + ptTpLossNote(acc, [o], v.tp));
+}
+// 미체결 주문 전체에 한꺼번에 적용 (비워 둔 칸은 각 주문의 기존 값을 그대로 둠). 하나라도 안 맞으면 아무것도 바꾸지 않음
+function applyPtOrderTpSlAll(){
+  const acc = getCurrentPaperAccount();
+  const orders = ptOrdersOf(acc);
+  if(!orders.length || !ptEl('pt-ord-bulk-tp') || !ptEl('pt-ord-bulk-sl')) return;
+  const v = ptParseTpSlInputs(ptEl('pt-ord-bulk-tp').value.trim(), ptEl('pt-ord-bulk-sl').value.trim());
+  if(!v){ showToast('익절가와 손절가는 0보다 큰 숫자로 입력해주세요.'); return; }
+  if(v.tp === null && v.sl === null){ showToast('익절가나 손절가를 하나 이상 입력해주세요. (비워 둔 칸은 각 주문의 기존 값을 그대로 둬요)'); return; }
+  const msg = ptValidateOrderTpSl(acc, orders, v.tp, v.sl);
+  if(msg){ showToast(msg + ' (일괄 적용을 취소했어요)'); return; }
+  orders.forEach(function(o){
+    if(v.tp !== null) o.tp = v.tp;
+    if(v.sl !== null) o.sl = v.sl;
+    delete ptOrdTpslDirty[o.id];
+  });
+  ptEl('pt-ord-bulk-tp').value = '';
+  ptEl('pt-ord-bulk-sl').value = '';
+  savePaperState();
+  renderPaperTrading();
+  showToast('미체결 주문 ' + orders.length + '건에 익절·손절을 적용했어요.' + (v.sl !== null ? ptBeyondNote(acc, orders) : '') + ptTpLossNote(acc, orders, v.tp));
+}
+function clearPtOrderTpSlAll(){
+  const acc = getCurrentPaperAccount();
+  const orders = ptOrdersOf(acc);
+  if(!orders.length) return;
+  orders.forEach(function(o){ o.tp = null; o.sl = null; });
+  ptOrdTpslDirty = {};
+  savePaperState();
+  renderPaperTrading();
+  showToast('미체결 주문 ' + orders.length + '건의 익절·손절 설정을 모두 해제했어요.');
 }
 
 // ---------- 화면 그리기 ----------
@@ -4533,9 +4890,11 @@ function renderPtAccountSummary(){
   if(!wrap) return;
   const acc = getCurrentPaperAccount();
   const margin = acc.position ? acc.position.margin : 0;
-  const reserved = acc.pending ? acc.pending.reserved : 0;
-  const total = acc.history.length;
-  const wins = acc.history.filter(function(h){ return h.net > 0; }).length;
+  const reserved = ptReservedTotal(acc);
+  const st = ptTradeStats(acc.history);
+  let statText = '-';
+  if(st.total) statText = st.total + '회 · ' + Math.round(st.wins / st.total * 100) + '%' + (st.partialRows ? ' <span class="pt-summary-sub">(분할 청산 ' + st.partialRows + '건 합산)</span>' : '');
+  else if(st.openPartialRows) statText = '<span class="pt-summary-sub">진행 중 · 분할 청산 ' + st.openPartialRows + '건</span>';
   const cum = acc.history.reduce(function(sum, h){ return sum + h.net; }, 0);
   function item(label, valueHtml){
     return '<div class="pt-summary-item"><span class="pt-summary-label">' + label + '</span><span class="pt-summary-value">' + valueHtml + '</span></div>';
@@ -4547,7 +4906,7 @@ function renderPtAccountSummary(){
     item('미실현 손익', '<span id="pt-sum-upnl">-</span>') +
     item('실현 손익 누계', '<span class="' + ptCls(cum) + '">' + ptSigned(cum) + '</span>') +
     item('총 수익률', '<span id="pt-sum-return">-</span>') +
-    item('청산 횟수 · 승률', total ? total + '회 · ' + Math.round(wins / total * 100) + '%' : '-') +
+    item('청산 횟수 · 승률', statText) +
     '<div class="pt-summary-actions"><button type="button" class="pt-mini-btn" onclick="resetPaperAccount()">계좌 초기화</button></div>';
 }
 function renderPtLeverage(){
@@ -4564,6 +4923,7 @@ function renderPtLeverage(){
 }
 function renderPtOrderPreviewFromInput(){
   ptUpdateChartPreviewLines();
+  renderPtMarginSlider();
   const wrap = ptEl('pt-order-preview');
   if(!wrap) return;
   const acc = getCurrentPaperAccount();
@@ -4602,32 +4962,64 @@ function renderPtOrderPreviewFromInput(){
     row('청산 시 최대 손실', ptMoney(margin) + ' USDT (증거금 전액)');
   const tp = ptReadNumber('pt-order-tp');
   const sl = ptReadNumber('pt-order-sl');
-  const side = ptInferSide(ref, tp, sl);
+  let side = ptInferSide(ref, tp, sl);
+  // 익절·손절을 안 적었어도 기존 포지션(분할 진입 중)에 손절/익절이 있으면 그 방향 기준으로 합산 위험을 보여줌
+  if(!side && acc.position) side = acc.position.side;
   if(side === 'invalid'){
     html += '<div class="pt-preview-warn">익절가와 손절가 방향이 서로 맞지 않아요.</div>';
   }else if(side){
-    const m = ptMergedPosition(acc.position, side, ref, margin, lev);
+    const base = (acc.position && acc.position.side === side) ? acc.position : null;
+    const m = ptMergedPosition(base, side, ref, margin, lev);
     const warn = ptValidateTpSl(side, ref, tp, sl, ptPosLiq(m));
     const sideName = side === 'long' ? '롱' : '숏';
     if(warn){
       html += '<div class="pt-preview-warn">' + escapeHtml(warn) + '</div>';
     }else{
-      const equity = ptAccountEquity(acc, price);
-      html += '<div class="pt-preview-row" style="margin-top:4px;"><span>(' + sideName + ' 기준)</span><span></span></div>';
-      if(sl){
-        const loss = calcPtPnl(side, ref, sl, qty) - fee - qty * sl * PT_FEE_RATE;
-        const pctOfEquity = equity > 0 ? Math.abs(loss) / equity * 100 : NaN;
-        html += row('손절 시 예상 손익', '<span class="pt-down">' + ptSigned(loss) + '</span>' + (isFinite(pctOfEquity) ? ' (자산의 ' + pctOfEquity.toFixed(2) + '%)' : ''));
-      }
-      if(tp){
-        const gain = calcPtPnl(side, ref, tp, qty) - fee - qty * tp * PT_FEE_RATE;
-        html += row('익절 시 예상 손익', '<span class="pt-up">' + ptSigned(gain) + '</span>');
-      }
-      if(tp && sl){
-        const rr = Math.abs(tp - ref) / Math.abs(ref - sl);
-        html += row('손익비', '1 : ' + rr.toFixed(2));
+      const effTp = tp || (base ? base.tp : null);
+      const effSl = sl || (base ? base.sl : null);
+      if(effSl && !ptSlIsEffective(side, effSl, ptPosLiq(m))){
+        html += '<div class="pt-preview-warn">합산하면 청산가(' + formatPrice(ptPosLiq(m)) + ')가 기존 손절가(' + formatPrice(effSl) + ')보다 안쪽이 돼요. 손절가를 다시 입력해주세요.</div>';
+      }else if(effSl || effTp){
+        const equity = ptAccountEquity(acc, price);
+        const upnlNow = base ? calcPtPnl(base.side, base.entry, price, base.qty) : 0;
+        const openFeeAll = (base ? base.feePaid : 0) + fee;
+        html += '<div class="pt-preview-row" style="margin-top:4px;"><span>(' + (base ? '합산 포지션 · ' : '') + sideName + ' 기준)</span><span></span></div>';
+        const outcome = function(exitP){
+          const pnlAll = calcPtPnl(side, m.entry, exitP, m.qty);
+          const closeFee = m.qty * exitP * PT_FEE_RATE;
+          return { total:pnlAll - closeFee - openFeeAll, fromNow:pnlAll - closeFee - fee - upnlNow };
+        };
+        if(effSl){
+          const o = outcome(effSl);
+          const pctOfEquity = equity > 0 ? Math.abs(o.fromNow) / equity * 100 : NaN;
+          if(base) html += row('손절 시 이 거래 전체 손익', '<span class="' + ptCls(o.total) + '">' + ptSigned(o.total) + '</span>');
+          html += row(base ? '손절 시 지금 자산 대비' : '손절 시 예상 손익', '<span class="' + ptCls(o.fromNow) + '">' + ptSigned(o.fromNow) + '</span>' + (isFinite(pctOfEquity) ? ' (자산의 ' + pctOfEquity.toFixed(2) + '%)' : ''));
+        }
+        if(effTp){
+          const o = outcome(effTp);
+          if(base) html += row('익절 시 이 거래 전체 손익', '<span class="' + ptCls(o.total) + '">' + ptSigned(o.total) + '</span>');
+          html += row(base ? '익절 시 지금 자산 대비' : '익절 시 예상 손익', '<span class="' + ptCls(o.fromNow) + '">' + ptSigned(o.fromNow) + '</span>');
+        }
+        if(effTp && effSl){
+          const rr = Math.abs(effTp - m.entry) / Math.abs(m.entry - effSl);
+          html += row('손익비' + (base ? ' (평균 진입가 기준)' : ''), '1 : ' + rr.toFixed(2));
+        }
       }
     }
+  }
+  if(isLimit){
+    const sideForLimit = acc.position ? acc.position.side : (ptOrdersOf(acc).length ? acc.orders[0].side : null);
+    if(sideForLimit){
+      const probe = { side:sideForLimit, price:ref, margin:margin, leverage:lev };
+      if(ptLadderLiqFlags(acc, probe).indexOf(probe) >= 0){
+        html += '<div class="pt-preview-warn">이 지정가는 앞선 체결로 생길 포지션의 청산가보다 ' + (sideForLimit === 'long' ? '아래' : '위') + '에 있어요. 그 가격에 닿기 전에 청산되면 청산 뒤 새 포지션으로 체결돼요.</div>';
+      }
+    }
+    [sideForLimit || 'long', sideForLimit ? null : 'short'].forEach(function(sd){
+      if(!sd) return;
+      const b = ptLimitBeyondSl(acc, sd, ref, null);
+      if(b) html += '<div class="pt-preview-warn">' + (sideForLimit ? '' : (sd === 'long' ? '(롱이라면) ' : '(숏이라면) ')) + '이 지정가가 손절가(' + formatPrice(b) + ')보다 ' + (sd === 'long' ? '아래' : '위') + '라서, 가격이 움직이면 손절이 먼저 일어나요. 분할 ' + (sd === 'long' ? '매수는 손절가보다 위' : '매도는 손절가보다 아래') + '에 두는 게 일반적이에요.</div>';
+    });
   }
   if(margin + fee > acc.balance + 1e-9){
     html += '<div class="pt-preview-warn">사용 가능한 잔고(' + ptMoney(acc.balance) + ' USDT)보다 커요.</div>';
@@ -4644,7 +5036,9 @@ function renderPtPosition(){
   const pos = acc.position;
   ptEl('pt-count-position').textContent = pos ? '1' : '0';
   if(!pos){
-    body.innerHTML = '<div class="empty">열려 있는 포지션이 없어요.<br>오른쪽 주문 패널에서 증거금을 입력하고 매수(롱) 또는 매도(숏)를 눌러보세요.</div>';
+    const nOrd = ptOrdersOf(acc).length;
+    body.innerHTML = '<div class="empty">열려 있는 포지션이 없어요.<br>오른쪽 주문 패널에서 증거금을 입력하고 매수(롱) 또는 매도(숏)를 눌러보세요.' +
+      (nOrd ? '<br><br>미체결 주문 ' + nOrd + '건이 있어요. 익절·손절은 <button type="button" class="pt-link-btn" onclick="setPtBottomTab(\'orders\')">미체결 주문 탭</button>에서 주문마다 설정할 수 있어요.' : '') + '</div>';
     return;
   }
   // 익절/손절을 입력하던 중이면 값 보존
@@ -4660,21 +5054,21 @@ function renderPtPosition(){
     '<div class="pt-position-head">' +
       '<span class="tag ' + (isLong ? 'dir-up' : 'dir-down') + '">' + (isLong ? '롱' : '숏') + '</span>' +
       '<b>BTC/USDT</b>' +
-      '<span class="pt-position-lev">' + ptLev(pos.leverage) + ' · 격리</span>' +
+      '<span class="pt-position-lev">' + ptLev(pos.leverage) + ' · 격리' + (pos.entries > 1 ? ' · 분할 진입 ' + pos.entries + '회' : '') + '</span>' +
     '</div>' +
     '<div class="pt-pos-grid">' +
       cell('미실현 손익 (USDT)', '<span id="pt-pos-pnl">-</span>', true) +
       cell('수익률 (증거금 대비)', '<span id="pt-pos-roe">-</span>', true) +
       cell('포지션 크기', ptMoney(notional) + ' USDT') +
       cell('수량', ptQty(pos.qty) + ' BTC') +
-      cell('진입가', formatPrice(pos.entry)) +
+      cell(pos.entries > 1 ? '평균 진입가' : '진입가', formatPrice(pos.entry)) +
       cell('현재가', '<span id="pt-pos-mark">-</span>') +
       cell('청산가', formatPrice(liq)) +
       cell('청산까지 거리', '<span id="pt-pos-liqdist">-</span>') +
       cell('증거금', ptMoney(pos.margin) + ' USDT') +
       cell('진입 수수료', ptMoney(pos.feePaid) + ' USDT') +
       cell('익절가', pos.tp ? formatPrice(pos.tp) : '-') +
-      cell('손절가', pos.sl ? formatPrice(pos.sl) : '-') +
+      cell('손절가', pos.sl ? formatPrice(pos.sl) + (ptSlIsEffective(pos.side, pos.sl, liq) ? '' : '<span class="pt-sl-warn">청산가보다 멀어 작동 안 함</span>') : '-') +
     '</div>' +
     '<div class="pt-pos-actions">' +
       '<div class="pt-pos-actions-title">익절 / 손절 설정 (비우고 적용하면 해제)</div>' +
@@ -4683,14 +5077,18 @@ function renderPtPosition(){
         '<input type="text" id="pt-pos-sl" inputmode="decimal" placeholder="손절가" aria-label="손절가" value="' + (pos.sl ? pos.sl : '') + '" oninput="sanitizeNumericInput(this);ptTpslDirty=true">' +
         '<button type="button" onclick="applyPtTpSl()">적용</button>' +
       '</div>' +
-      '<div class="pt-pos-actions-title">시장가 청산</div>' +
+      '<div class="pt-pos-actions-title">시장가 청산 (지금 남아 있는 수량의 몇 %)</div>' +
       '<div class="pt-close-row">' +
         '<button type="button" onclick="closePtPercent(25)">25%</button>' +
         '<button type="button" onclick="closePtPercent(50)">50%</button>' +
         '<button type="button" onclick="closePtPercent(75)">75%</button>' +
         '<button type="button" class="all" onclick="closePtPercent(100)">전체 청산</button>' +
       '</div>' +
-      '<div class="pt-pos-note">청산 수수료 0.06%가 청산 금액에 부과돼요. 같은 방향으로 주문을 더 넣으면 평균 진입가로 합쳐져요.</div>' +
+      '<div class="pt-close-custom">' +
+        '<div class="pt-pct-wrap"><input type="text" id="pt-close-pct" inputmode="decimal" placeholder="직접 입력 (1~100)" aria-label="청산 비율(%)" oninput="sanitizeNumericInput(this)" onkeydown="if(event.key===\'Enter\')closePtCustom()"><span class="pt-pct-suffix">%</span></div>' +
+        '<button type="button" onclick="closePtCustom()">부분 청산</button>' +
+      '</div>' +
+      '<div class="pt-pos-note">청산 수수료 0.06%가 청산 금액에 부과돼요. 25%를 두 번 누르면 처음 수량의 43.75%가 청산돼요(남은 수량 기준). 같은 방향으로 주문을 더 넣으면 평균 진입가로 합쳐져요.</div>' +
     '</div>';
   if(keep){ ptEl('pt-pos-tp').value = keep.tp; ptEl('pt-pos-sl').value = keep.sl; }
   updatePtLiveValues();
@@ -4699,22 +5097,112 @@ function renderPtOrders(){
   const body = ptEl('pt-orders-body');
   if(!body) return;
   const acc = getCurrentPaperAccount();
-  const o = acc.pending;
-  ptEl('pt-count-orders').textContent = o ? '1' : '0';
-  if(!o){
-    body.innerHTML = '<div class="empty">미체결 주문이 없어요.<br>주문 패널에서 지정가를 선택하면 가격이 닿을 때 자동으로 체결돼요.</div>';
+  const orders = ptOrdersOf(acc);
+  ptEl('pt-count-orders').textContent = String(orders.length);
+  // 다른 계좌로 바뀌었으면 입력 중이던 값(적용 전)을 가져오지 않음 — 다른 계좌 주문에 잘못 적용되는 것을 막음
+  const sameAcc = (ptOrdRenderedAcc === acc.id);
+  ptOrdRenderedAcc = acc.id;
+  if(!sameAcc) ptOrdTpslDirty = {};
+  if(!orders.length){
+    body.innerHTML = '<div class="empty">미체결 주문이 없어요.<br>주문 패널에서 지정가를 선택하면 가격이 닿을 때 자동으로 체결돼요.<br>가격을 바꿔가며 개수 제한 없이 여러 개를 걸 수 있어서 분할 매수·매도를 연습할 수 있어요. (잔고가 허락하는 만큼)</div>';
     return;
   }
-  const isLong = o.side === 'long';
-  body.innerHTML =
-    '<div class="pt-list-item">' +
+  const side = orders[0].side;
+  const sorted = ptOrdersInFillOrder(orders, side);   // 현재가에서 가까워 먼저 체결될 순서
+  // 다시 그리기 전에, 입력하던 값(적용 전)과 입력칸 포커스를 기억해 둠
+  const keepOrd = {};
+  const live = {};
+  orders.forEach(function(o){ live[o.id] = true; });
+  Object.keys(ptOrdTpslDirty).forEach(function(k){ if(!live[k]) delete ptOrdTpslDirty[k]; });
+  body.querySelectorAll('.pt-ord-tpsl').forEach(function(bx){
+    const id = bx.dataset.id;
+    if(ptOrdTpslDirty[id]) keepOrd[id] = { tp:bx.querySelector('.ord-tp').value, sl:bx.querySelector('.ord-sl').value };
+  });
+  const oldBulkTp = ptEl('pt-ord-bulk-tp'), oldBulkSl = ptEl('pt-ord-bulk-sl');
+  const keepBulk = (sameAcc && oldBulkTp && oldBulkSl) ? { tp:oldBulkTp.value, sl:oldBulkSl.value } : null;
+  let focus = null;
+  const ae = document.activeElement;
+  if(sameAcc && ae && body.contains(ae) && ae.tagName === 'INPUT'){
+    const bx = ae.closest('.pt-ord-tpsl');
+    focus = { bulk:!bx, id:bx ? bx.dataset.id : null, kind:(ae.classList.contains('ord-tp') || ae.id === 'pt-ord-bulk-tp') ? 'tp' : 'sl', pos:ae.selectionStart };
+  }
+
+  let html = '<div class="pt-orders-head"><span class="pt-list-sub">미체결 ' + orders.length + '건 · 예약된 금액 ' + ptMoney(ptReservedTotal(acc)) + ' USDT</span>' +
+    (orders.length > 1 ? '<button type="button" class="pt-cancel-all" onclick="cancelAllPtOrders()">전체 취소</button>' : '') + '</div>';
+  if(orders.length > 1){
+    html += '<div class="pt-ord-bulk">' +
+      '<div class="pt-pos-actions-title">모든 미체결 주문에 한꺼번에 익절 / 손절 적용 (비워 둔 칸은 그대로 둠)</div>' +
+      '<div class="pt-tpsl-edit">' +
+        '<input type="text" id="pt-ord-bulk-tp" inputmode="decimal" placeholder="익절가" aria-label="전체 주문 익절가" oninput="sanitizeNumericInput(this)" onkeydown="if(event.key===\'Enter\')applyPtOrderTpSlAll()">' +
+        '<input type="text" id="pt-ord-bulk-sl" inputmode="decimal" placeholder="손절가" aria-label="전체 주문 손절가" oninput="sanitizeNumericInput(this)" onkeydown="if(event.key===\'Enter\')applyPtOrderTpSlAll()">' +
+        '<button type="button" onclick="applyPtOrderTpSlAll()">일괄 적용</button>' +
+      '</div>' +
+      '<button type="button" class="pt-ord-clear" onclick="clearPtOrderTpSlAll()">모든 주문의 익절·손절 해제</button>' +
+    '</div>';
+  }
+  html += sorted.map(function(o){
+    const isLong = o.side === 'long';
+    const kept = keepOrd[o.id];
+    const tpVal = kept ? kept.tp : (o.tp ? String(o.tp) : '');
+    const slVal = kept ? kept.sl : (o.sl ? String(o.sl) : '');
+    return '<div class="pt-list-item">' +
       '<div class="pt-list-head"><span class="tag ' + (isLong ? 'dir-up' : 'dir-down') + '">' + (isLong ? '매수 (롱)' : '매도 (숏)') + '</span>' +
       '<span class="tag cat-etc">지정가</span><span class="pt-list-time">' + ptFmtTime(o.createdAt) + '</span></div>' +
       '<div class="pt-list-main"><b class="pt-list-sub" style="color:var(--ink);">' + formatPrice(o.price) + ' USDT</b>' +
       '<span class="pt-list-sub">증거금 ' + ptMoney(o.margin) + ' · ' + o.leverage + 'x · ' + ptQty(o.margin * o.leverage / o.price) + ' BTC</span></div>' +
-      '<div class="pt-list-sub" style="margin-top:4px;">익절 ' + (o.tp ? formatPrice(o.tp) : '-') + ' · 손절 ' + (o.sl ? formatPrice(o.sl) : '-') + ' · 예약된 금액 ' + ptMoney(o.reserved) + ' USDT</div>' +
-      '<button type="button" class="pt-cancel-btn" onclick="cancelPtPending()">주문 취소</button>' +
+      '<div class="pt-list-sub" style="margin-top:4px;">예약된 금액 ' + ptMoney(o.reserved) + ' USDT</div>' +
+      '<div class="pt-ord-tpsl" data-id="' + escapeHtml(o.id) + '">' +
+        '<div class="pt-pos-actions-title">이 주문의 익절 / 손절 · 체결되면 포지션에 적용 (비우면 해제)</div>' +
+        '<div class="pt-tpsl-edit">' +
+          '<input type="text" class="ord-tp" inputmode="decimal" placeholder="익절가" aria-label="이 주문의 익절가" value="' + escapeHtml(tpVal) + '" oninput="sanitizeNumericInput(this);ptMarkOrdDirty(this)" onkeydown="if(event.key===\'Enter\')applyPtOrderTpSl(this)">' +
+          '<input type="text" class="ord-sl" inputmode="decimal" placeholder="손절가" aria-label="이 주문의 손절가" value="' + escapeHtml(slVal) + '" oninput="sanitizeNumericInput(this);ptMarkOrdDirty(this)" onkeydown="if(event.key===\'Enter\')applyPtOrderTpSl(this)">' +
+          '<button type="button" onclick="applyPtOrderTpSl(this)">적용</button>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="pt-cancel-btn" data-id="' + escapeHtml(o.id) + '" onclick="cancelPtOrder(this.dataset.id)">주문 취소</button>' +
     '</div>';
+  }).join('');
+  // 전부 체결되면 평균 진입가·청산가가 어떻게 되는지 (분할 진입 계획 확인)
+  const plan = ptSimulatePlan(acc);
+  if(plan){
+    const row = function(l, v){ return '<div class="pt-preview-row"><span>' + l + '</span><span>' + v + '</span></div>'; };
+    html += '<div class="pt-plan"><div class="pt-plan-title">전부 체결되면' + (acc.position ? ' (현재 포지션과 합산)' : '') + '</div>' +
+      row('평균 진입가', formatPrice(plan.pos.entry)) +
+      row('총 수량', ptQty(plan.pos.qty) + ' BTC') +
+      row('총 포지션 크기', ptMoney(plan.pos.qty * plan.pos.entry) + ' USDT') +
+      row('총 증거금', ptMoney(plan.pos.margin) + ' USDT') +
+      row('예상 청산가', formatPrice(plan.liq)) +
+      row('익절가 · 손절가', (plan.tp ? formatPrice(plan.tp) : '-') + ' · ' + (plan.sl ? formatPrice(plan.sl) : '-'));
+    if(plan.sl && !ptSlIsEffective(side, plan.sl, plan.liq)){
+      html += '<div class="pt-preview-warn">손절가(' + formatPrice(plan.sl) + ')가 청산가보다 멀어 작동하지 않아요. 주문을 조정해주세요.</div>';
+    }
+    const flags = ptLadderLiqFlags(acc);
+    if(flags.length){
+      html += '<div class="pt-preview-warn">' + flags.map(function(o){ return formatPrice(o.price); }).join(' · ') + ' 주문은 앞선 체결로 생길 포지션의 청산가보다 ' + (side === 'long' ? '아래' : '위') +
+        '에 있어요. 그 가격에 닿기 전에 청산되면, 이 주문은 청산 뒤 새 포지션으로 체결돼요. (분할 주문 간격을 청산가 안쪽으로 두는 게 일반적이에요)</div>';
+    }
+    html += '<div class="pt-pos-note">주문에 설정한 익절·손절은 그 주문이 체결될 때 포지션에 적용돼요. 여러 주문이 체결되면 가장 나중에 체결된 주문의 값으로 바뀌고, 비워 둔 주문은 기존 설정을 그대로 둬요.</div>';
+    html += '</div>';
+  }
+  body.innerHTML = html;
+  if(keepBulk && orders.length > 1){
+    ptEl('pt-ord-bulk-tp').value = keepBulk.tp;
+    ptEl('pt-ord-bulk-sl').value = keepBulk.sl;
+  }
+  // 입력 중이던 칸에 다시 포커스 (재렌더로 포커스를 잃지 않게)
+  if(focus){
+    let target = null;
+    if(focus.bulk){
+      target = ptEl(focus.kind === 'tp' ? 'pt-ord-bulk-tp' : 'pt-ord-bulk-sl');
+    }else{
+      body.querySelectorAll('.pt-ord-tpsl').forEach(function(bx){
+        if(bx.dataset.id === focus.id) target = bx.querySelector(focus.kind === 'tp' ? '.ord-tp' : '.ord-sl');
+      });
+    }
+    if(target){
+      try{ target.focus(); if(typeof focus.pos === 'number') target.setSelectionRange(focus.pos, focus.pos); }catch(e){}
+    }
+  }
 }
 function renderPtHistory(){
   const body = ptEl('pt-history-body');
@@ -4731,7 +5219,7 @@ function renderPtHistory(){
       '<div class="pt-list-head"><span class="tag ' + (isLong ? 'dir-up' : 'dir-down') + '">' + (isLong ? '롱' : '숏') + ' ' + ptLev(h.leverage) + '</span>' +
       '<span class="tag ' + (h.reason === 'liq' ? 'pt-liq' : 'cat-etc') + '">' + ptReasonLabel(h) + '</span>' +
       '<span class="pt-list-time">' + ptFmtTime(h.closedAt) + '</span></div>' +
-      '<div class="pt-list-main"><span class="pt-list-sub">' + formatPrice(h.entry) + ' → ' + formatPrice(h.exit) + ' · ' + ptQty(h.qty) + ' BTC</span>' +
+      '<div class="pt-list-main"><span class="pt-list-sub">' + formatPrice(h.entry) + (h.entries > 1 ? ' (평균)' : '') + ' → ' + formatPrice(h.exit) + ' · ' + ptQty(h.qty) + ' BTC</span>' +
       '<span class="pt-list-net ' + ptCls(h.net) + '">' + ptSigned(h.net) + ' USDT</span></div>' +
       '<div class="pt-list-sub" style="margin-top:2px;">수수료 포함 · 손익 ' + ptSigned(h.pnl) + ' · 수수료 ' + ptMoney(h.fee) + '</div>' +
     '</div>';
@@ -5220,18 +5708,35 @@ function ptSetChartLine(key, price, title, color, style){
 function updatePtChartLines(){
   if(ptChartState !== 'ready' || !ptChart) return;
   const acc = getCurrentPaperAccount();
-  const pos = acc.position, o = acc.pending;
-  const SOLID = 0, DASHED = 2;
+  const pos = acc.position;
+  const SOLID = 0, DASHED = 2, LARGE_DASHED = 3;
   if(pos){
     ptSetChartLine('entry', pos.entry, (pos.side === 'long' ? '롱 진입 ' : '숏 진입 ') + ptLev(pos.leverage), PT_LINE_COLORS.entry, SOLID);
     ptSetChartLine('liq', ptPosLiq(pos), '청산가', PT_LINE_COLORS.liq, DASHED);
     ptSetChartLine('tp', pos.tp || 0, '익절', PT_LINE_COLORS.tp, DASHED);
-    ptSetChartLine('sl', pos.sl || 0, '손절', PT_LINE_COLORS.sl, DASHED);
+    ptSetChartLine('sl', pos.sl || 0, ptSlIsEffective(pos.side, pos.sl, ptPosLiq(pos)) ? '손절' : '손절 (청산가 밖·무효)', PT_LINE_COLORS.sl, DASHED);
   }else{
     ptSetChartLine('entry', 0); ptSetChartLine('liq', 0); ptSetChartLine('tp', 0); ptSetChartLine('sl', 0);
   }
-  if(o) ptSetChartLine('pending', o.price, o.side === 'long' ? '지정 매수' : '지정 매도', PT_LINE_COLORS.pending, DASHED);
-  else ptSetChartLine('pending', 0);
+  // 미체결 지정가 주문 (여러 개): 없어진 주문의 선은 지움
+  const orders = ptOrdersOf(acc);
+  const live = {};
+  orders.forEach(function(o){
+    live['ord:' + o.id] = true;
+    ptSetChartLine('ord:' + o.id, o.price, o.side === 'long' ? '지정 매수' : '지정 매도', PT_LINE_COLORS.pending, DASHED);
+    // 주문에 걸어 둔 익절·손절: 같은 가격이 여러 주문에 있거나 이미 포지션 선이 있으면 한 번만 그림
+    if(o.tp && !(pos && pos.tp === o.tp)){
+      live['otp:' + o.tp] = true;
+      ptSetChartLine('otp:' + o.tp, o.tp, '익절 (주문)', PT_LINE_COLORS.tp, LARGE_DASHED);
+    }
+    if(o.sl && !(pos && pos.sl === o.sl)){
+      live['osl:' + o.sl] = true;
+      ptSetChartLine('osl:' + o.sl, o.sl, '손절 (주문)', PT_LINE_COLORS.sl, LARGE_DASHED);
+    }
+  });
+  Object.keys(ptChartLines).forEach(function(k){
+    if((k.indexOf('ord:') === 0 || k.indexOf('otp:') === 0 || k.indexOf('osl:') === 0) && !live[k]) ptSetChartLine(k, 0);
+  });
   ptUpdateChartPreviewLines();
 }
 // 주문 패널에 입력 중인 지정가·익절·손절을 점선으로 미리 보여줌
@@ -5241,7 +5746,7 @@ function ptUpdateChartPreviewLines(){
   let lim = ptOrderType === 'limit' ? ptReadNumber('pt-limit-input') : null;
   // 방금 낸 지정가 주문과 같은 가격이면 미체결 주문선만 보이게 (입력칸 미리보기선은 겹치므로 숨김)
   const accPv = getCurrentPaperAccount();
-  if(lim && accPv && accPv.pending && Math.abs(accPv.pending.price - lim) < 1e-9) lim = null;
+  if(lim && accPv && ptOrdersOf(accPv).some(function(o){ return Math.abs(o.price - lim) < 1e-9; })) lim = null;
   ptSetChartLine('pvLimit', lim || 0, '지정가 (입력)', PT_LINE_COLORS.preview, DOTTED);
   ptSetChartLine('pvTp', ptReadNumber('pt-order-tp') || 0, '익절 (입력)', PT_LINE_COLORS.tp, DOTTED);
   ptSetChartLine('pvSl', ptReadNumber('pt-order-sl') || 0, '손절 (입력)', PT_LINE_COLORS.sl, DOTTED);
