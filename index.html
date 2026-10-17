@@ -165,6 +165,10 @@
   body.chart-fs-lock{overflow:hidden;}
 
   /* 토스트 */
+  .storage-warning{margin:12px 16px 0;padding:12px 14px;border-radius:12px;background:var(--surface2);border:1.5px solid #F59E0B;color:var(--ink);font-size:13px;line-height:1.55;}
+  .storage-warning b{display:block;margin-bottom:2px;color:#D97706;}
+  .storage-warning .sw-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .storage-warning .sw-actions .btn{width:auto;padding:8px 12px;font-size:12.5px;}
   .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:#18181B;color:#fff;
     padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;
     transition:opacity .25s,transform .25s;z-index:1000;max-width:88%;text-align:center;box-shadow:0 4px 16px rgba(24,24,27,.2);}
@@ -304,6 +308,7 @@
     .market-grid{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start;}
     .tv-chart-shell{height:600px;}
     .toast{bottom:24px;left:50%;}
+    .storage-warning{margin:16px 32px 0;max-width:1336px;}
     .settings-overlay{align-items:center;}
     .settings-panel{border-radius:20px;max-height:80vh;}
   }
@@ -617,12 +622,24 @@
   .pt-leverage-slider{width:100%;padding:0;border:none;background:none;accent-color:var(--accent);margin:2px 0 8px;display:block;}
   .pt-leverage-slider:focus{outline-offset:4px;}
   .pt-lock-note{font-size:11.5px;color:var(--ink-dim);margin:-6px 0 12px;line-height:1.5;}
+  #paper-chart.pt-line-hover, #paper-chart.pt-line-hover *{cursor:ns-resize !important;}
+  #paper-chart.pt-dragging, #paper-chart.pt-dragging *{cursor:grabbing !important;}
+  .pt-mode-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .pt-mode-seg{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--surface2);border-radius:9px;padding:3px;min-width:150px;}
+  .pt-mode-btn{background:none;border:none;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;color:var(--ink-dim);cursor:pointer;font-family:var(--sans);}
+  .pt-mode-btn.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(24,24,27,.08);}
+  .pt-mode-btn:disabled{cursor:not-allowed;}
+  .pt-mode-btn:disabled:not(.active){opacity:.45;}
+  .pt-mode-desc{font-size:11.5px;color:var(--ink-dim);line-height:1.5;margin-bottom:12px;}
   .pt-limit-row,.pt-tpsl-row label{font-size:12px;}
   .pt-limit-row{margin-bottom:10px;}
   .pt-limit-row label,.pt-tpsl-row label{display:block;font-size:12px;color:var(--ink-dim);font-weight:700;margin-bottom:6px;}
   .pt-input-with-btn{display:flex;gap:6px;}
   .pt-input-with-btn input{flex:1;min-width:0;font-size:15px;font-family:var(--mono);}
   .pt-input-with-btn button{flex:0 0 auto;background:var(--surface2);border:1px solid var(--line);color:var(--ink-dim);border-radius:10px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+  .pt-input-with-btn button.pt-step-btn{padding:0 9px;font-family:var(--mono);font-size:12px;min-width:44px;}
+  .pt-input-with-btn button:hover{color:var(--ink);}
+  .pt-limit-offset{font-size:11px;color:var(--ink-dim);line-height:1.4;margin-top:5px;min-height:15px;}
   .pt-tpsl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
   .pt-tpsl-row input{font-size:14px;font-family:var(--mono);padding:9px 10px;}
   .pt-margin-input-row input{font-size:15px;}
@@ -640,6 +657,7 @@
   .pt-btab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:13px;font-weight:700;color:var(--ink-dim);cursor:pointer;white-space:nowrap;font-family:var(--sans);margin-bottom:-1px;}
   .pt-btab.active{color:var(--ink);border-bottom-color:var(--accent);}
   .pt-count{font-family:var(--mono);font-size:11px;background:var(--surface2);border-radius:10px;padding:1px 6px;margin-left:2px;}
+  @media (max-width:520px){ .pt-btab{padding:8px 5px;font-size:12px;} .pt-bottom-tabs{gap:0;} .pt-count{padding:1px 4px;font-size:10.5px;} }
   .pt-position-lev{margin-left:auto;}
   .pt-pos-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;}
   .pt-pos-cell{min-width:0;}
@@ -689,12 +707,120 @@
   .pt-rules ul{margin:10px 0 0;padding-left:18px;}
   .pt-rules li{margin-bottom:4px;}
 
+  /* ----- 빠른 거래 (차트 + 버튼·주문 카드) ----- */
+  .pt-qt-plus[hidden],.pt-qt-tag[hidden],.pt-qt-card[hidden]{display:none !important;}
+  .pt-qt-plus{position:absolute;z-index:3;width:26px;height:26px;padding:0;border-radius:6px;border:1px solid #4A4660;background:#2A2833;color:#E9E7F3;font-size:19px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--sans);box-shadow:0 1px 4px rgba(0,0,0,.45);}
+  .pt-qt-plus:hover,.pt-qt-plus:focus-visible{background:var(--accent);border-color:var(--accent);color:#fff;outline:none;}
+  .pt-qt-tag{position:absolute;z-index:3;height:26px;line-height:26px;padding:0 8px;border-radius:6px;background:#34313F;color:#fff;font-family:var(--mono);font-size:12px;pointer-events:none;white-space:nowrap;}
+  .pt-qt-card{position:absolute;z-index:4;width:272px;max-width:calc(100% - 16px);max-height:calc(100% - 12px);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 10px 28px rgba(0,0,0,.4);font-size:13px;}
+  /* 카드가 차트보다 길어지면 가운데 내용만 스크롤하고, 제목줄과 '주문 걸기' 버튼은 항상 보이게 */
+  .pt-qt-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;margin:0 -4px;padding:0 4px;}
+  .pt-qt-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+  .pt-qt-title{font-size:13.5px;font-weight:800;color:var(--ink);}
+  .pt-qt-title.long{color:var(--rise);}
+  .pt-qt-title.short{color:var(--fall);}
+  .pt-qt-x{background:none;border:none;color:var(--ink-dim);font-size:14px;cursor:pointer;padding:2px 4px;line-height:1;}
+  .pt-qt-x:hover{color:var(--ink);}
+  .pt-qt-label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-dim);margin-bottom:4px;}
+  .pt-qt-card input{width:100%;box-sizing:border-box;font-size:15px;font-family:var(--mono);padding:8px 10px;min-width:0;}
+  .pt-qt-sub{font-size:11px;color:var(--ink-dim);margin:3px 0 8px;line-height:1.4;}
+  .pt-qt-unitrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+  .pt-qt-unitrow .pt-qt-label{margin-bottom:0;}
+  .pt-qt-seg{display:inline-grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--surface2);border-radius:8px;padding:2px;}
+  .pt-qt-seg button{background:none;border:none;border-radius:6px;padding:3px 9px;font-size:11.5px;font-weight:700;color:var(--ink-dim);cursor:pointer;font-family:var(--sans);}
+  .pt-qt-seg button.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(24,24,27,.12);}
+  .pt-qt-pcts{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:7px 0 6px;}
+  .pt-qt-pcts button{background:var(--surface2);border:1px solid var(--line);color:var(--ink-dim);border-radius:7px;padding:5px 0;font-size:11.5px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+  .pt-qt-pcts button:hover{color:var(--ink);}
+  .pt-qt-avail{font-size:11px;color:var(--ink-dim);line-height:1.5;margin-bottom:6px;}
+  .pt-qt-body{margin-bottom:8px;}
+  .pt-qt-body .pt-preview-row{font-size:12px;padding:2px 0;}
+  .pt-qt-body .pt-preview-warn{font-size:11.5px;margin-top:4px;}
+  .pt-qt-submit{flex:0 0 auto;width:100%;margin-top:2px;border:none;border-radius:9px;padding:11px 0;font-size:14px;font-weight:800;color:#fff;cursor:pointer;font-family:var(--sans);background:var(--ink-dim);}
+  .pt-qt-submit.long{background:var(--rise);}
+  .pt-qt-submit.short{background:var(--fall);}
+  .pt-qt-submit:disabled{opacity:.45;cursor:not-allowed;}
+  .pt-qt-card button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* ----- 복기·통계·위험 계산·CSV (Round D) ----- */
+  .pt-mini-btn.pt-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .pt-mini-btn.pt-primary:hover{color:#fff;opacity:.9;}
+  .pt-mini-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .pt-mini-btn:focus-visible,.pt-note-btn:focus-visible,.pt-tagbtn:focus-visible,.pt-dimtab:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .pt-hist-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .pt-hist-count{font-size:12px;color:var(--ink-dim);}
+  .pt-hist-btns{display:flex;gap:6px;flex-wrap:wrap;}
+  .pt-hist-notice{font-size:12px;line-height:1.55;color:var(--ink-dim);background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin-bottom:10px;}
+  .pt-more-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:12px;border-top:1px solid var(--line);}
+  .pt-note-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+  .pt-note-tag{font-size:11.5px;font-weight:700;color:var(--accent-deep);background:var(--accent-soft);border-radius:6px;padding:2px 7px;overflow-wrap:anywhere;}
+  .pt-note-memo{margin-top:8px;font-size:13px;line-height:1.6;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;background:var(--surface2);border-radius:8px;padding:8px 10px;}
+  .pt-note-row{margin-top:8px;}
+  .pt-note-btn{background:none;border:none;padding:0;color:var(--accent-deep);font-weight:700;font-size:12px;cursor:pointer;font-family:var(--sans);}
+  .pt-note-btn:hover{text-decoration:underline;}
+  .pt-note-editor{margin-top:10px;padding:10px 12px;border:1px solid var(--accent);border-radius:10px;background:var(--surface2);}
+  .pt-note-label{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:8px;}
+  .pt-note-label span{font-weight:500;color:var(--ink-dim);}
+  .pt-tagpicker{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .pt-tagbtn{background:var(--surface);border:1px solid var(--line);color:var(--ink-dim);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);overflow-wrap:anywhere;text-align:left;}
+  .pt-tagbtn.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .pt-note-custom{display:flex;gap:6px;margin-bottom:8px;}
+  .pt-note-custom input{flex:1;min-width:0;font-size:14px;padding:8px 10px;}
+  .pt-note-editor textarea{width:100%;box-sizing:border-box;font-size:14px;line-height:1.5;padding:9px 10px;min-height:72px;}
+  .pt-note-actions{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .pt-note-count{margin-left:auto;font-size:11px;color:var(--ink-dim);font-family:var(--mono);}
+
+  .pt-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:16px;}
+  .pt-stat-card{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;}
+  .pt-stat-label{font-size:11.5px;color:var(--ink-dim);margin-bottom:3px;}
+  .pt-stat-value{font-family:var(--mono);font-size:15px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+  .pt-stat-sub{font-size:11px;color:var(--ink-dim);margin-top:2px;line-height:1.4;overflow-wrap:anywhere;}
+  .pt-stat-title{font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;}
+  .pt-stat-title span{font-size:11.5px;font-weight:500;color:var(--ink-dim);}
+  .pt-eq-wrap{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px;}
+  .pt-eq-svg{display:block;width:100%;height:auto;aspect-ratio:600/180;min-height:120px;}
+  .pt-eq-base{stroke:var(--ink-dim);stroke-width:1;stroke-dasharray:4 4;opacity:.6;vector-effect:non-scaling-stroke;}
+  .pt-eq-line{stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;}
+  .pt-eq-line.up{stroke:var(--rise);}
+  .pt-eq-line.down{stroke:var(--fall);}
+  .pt-eq-dot{fill:var(--surface);stroke:var(--ink-dim);stroke-width:1.2;vector-effect:non-scaling-stroke;}
+  .pt-eq-end.up{fill:var(--rise);}
+  .pt-eq-end.down{fill:var(--fall);}
+  .pt-eq-mdd{fill:none;stroke:var(--fall);stroke-width:2;vector-effect:non-scaling-stroke;}
+  .pt-eq-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink-dim);margin:6px 2px 16px;}
+  .pt-eq-key{display:inline-block;width:16px;height:0;border-top:1px dashed var(--ink-dim);margin-right:5px;vertical-align:middle;}
+  .pt-eq-key.mdd{width:9px;height:9px;border:2px solid var(--fall);border-radius:50%;box-sizing:border-box;}
+  .pt-dimtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px;}
+  .pt-dimtab{flex:0 0 auto;background:var(--surface2);border:1px solid var(--line);color:var(--ink-dim);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--sans);}
+  .pt-dimtab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .pt-stat-hint{font-size:11.5px;color:var(--ink-dim);line-height:1.5;margin-bottom:8px;}
+  .pt-stat-table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:auto;}
+  .pt-stat-table th{font-size:11px;font-weight:700;color:var(--ink-dim);text-align:right;padding:6px 4px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  .pt-stat-table th:first-child,.pt-stat-table td:first-child{text-align:left;}
+  .pt-stat-table td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);}
+  .pt-stat-table td:first-child{font-family:var(--sans);font-weight:700;overflow-wrap:anywhere;word-break:keep-all;}
+  .pt-stat-table tr.thin td{opacity:.62;}
+  .pt-stat-table tr:last-child td{border-bottom:none;}
+  .pt-thin{display:inline-block;font-family:var(--sans);font-size:10.5px;font-weight:700;color:var(--ink-dim);background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:0 5px;margin-left:2px;white-space:nowrap;}
+  .pt-stat-caution{margin-top:14px;font-size:11.5px;line-height:1.6;color:var(--ink-dim);background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:9px 11px;}
+
+  .pt-risk-box{margin:0 0 14px;border:1px dashed var(--line);border-radius:10px;background:var(--surface2);padding:0 12px;}
+  .pt-risk-box>summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-dim);padding:10px 0;}
+  .pt-risk-box[open]>summary{color:var(--ink);}
+  .pt-risk-body{padding-bottom:12px;}
+  .pt-risk-inputs{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:6px;}
+  .pt-risk-inputs input{font-size:15px;font-family:var(--mono);padding:9px 10px;min-width:0;}
+  .pt-risk-inputs select{font-size:13px;padding:9px 30px 9px 10px;min-width:0;}
+  .pt-risk-box .pt-percent-row{margin-bottom:8px;}
+  .pt-risk-apply{width:100%;margin-top:8px;padding:9px 10px;font-size:13px;}
+
   @media (min-width:880px){
     .pt-topbar{flex-direction:row;align-items:center;justify-content:space-between;}
     .pt-main-grid{grid-template-columns:minmax(0,1fr) 340px;grid-template-areas:"chart trade" "bottom trade";grid-template-rows:auto 1fr;align-items:start;}
     .pt-trade-col{position:sticky;top:76px;}
     .tv-chart-shell#pt-chart-shell{height:560px;}
     .pt-pos-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .pt-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
   }
 </style>
 
@@ -771,6 +897,15 @@
 <div class="nav-hover-scrim"></div>
 
 <div class="app-shell">
+
+<div id="storage-warning" class="storage-warning" role="alert" style="display:none;">
+  <b>⚠ 저장이 안 되고 있어요</b>
+  <div id="storage-warning-msg"></div>
+  <div class="sw-actions">
+    <button type="button" class="btn" onclick="exportData()">백업(JSON) 내보내기</button>
+    <button type="button" class="btn secondary" onclick="openSettings()">저장 상태 보기</button>
+  </div>
+</div>
 
 <!-- 메인 대시보드 탭 -->
 <div id="tab-dashboard" class="tab-content active">
@@ -1016,14 +1151,37 @@
         <div class="pt-chart-toolbar" id="pt-chart-toolbar">
           <div class="pt-tf-group" id="pt-tf-group" role="group" aria-label="봉 간격"></div>
           <div class="pt-ind-group">
-            <button type="button" class="pt-ind-btn" id="pt-ind-ma" onclick="togglePtIndicator('ma')" title="이동평균선 20 · 60">MA</button>
+            <button type="button" class="pt-ind-btn" id="pt-ind-vwma" onclick="togglePtIndicator('vwma')" title="거래량 가중 이동평균선 (VWMA 100, 흰색)">VWMA</button>
             <button type="button" class="pt-ind-btn" id="pt-ind-vol" onclick="togglePtIndicator('vol')">거래량</button>
+            <button type="button" class="pt-ind-btn" id="pt-ind-quick" onclick="togglePtQuick()" title="빠른 거래: 차트 가격 위에 마우스를 올리면 + 버튼이 뜨고, 눌러서 그 가격에 바로 지정가 주문 (켜기/끄기)">빠른 거래</button>
+            <button type="button" class="pt-ind-btn" id="pt-ind-sound" onclick="togglePtSound()" title="체결될 때 소리 켜기/끄기">체결음</button>
             <button type="button" class="pt-ind-btn" onclick="ptChartToLatest()" title="최신 캔들로 이동">현재로</button>
           </div>
         </div>
         <div class="pt-chart-stage">
           <div class="pt-chart-canvas" id="paper-chart"></div>
           <div class="pt-chart-legend" id="pt-chart-legend"></div>
+          <div class="pt-qt-tag" id="pt-qt-tag" hidden></div>
+          <button type="button" class="pt-qt-plus" id="pt-qt-plus" aria-label="이 가격에 지정가 주문 걸기 (빠른 거래)" onclick="ptQuickPlusClick()" hidden>+</button>
+          <div class="pt-qt-card" id="pt-qt-card" role="dialog" aria-label="빠른 거래 지정가 주문" hidden>
+            <div class="pt-qt-head"><span class="pt-qt-title" id="pt-qt-title">빠른 거래</span><button type="button" class="pt-qt-x" onclick="ptQuickClose()" aria-label="닫기">✕</button></div>
+            <div class="pt-qt-scroll">
+            <label class="pt-qt-label" for="pt-qt-price">가격 (USDT)</label>
+            <input type="text" id="pt-qt-price" inputmode="decimal" autocomplete="off" oninput="sanitizeNumericInput(this);ptQuickOnPrice()">
+            <div class="pt-qt-sub" id="pt-qt-pricepct"></div>
+            <div class="pt-qt-unitrow">
+              <label class="pt-qt-label" for="pt-qt-amount" id="pt-qt-amount-label">수량 (BTC)</label>
+              <span class="pt-qt-seg" role="group" aria-label="입력 단위"><button type="button" id="pt-qt-u-qty" onclick="setPtQuickUnit('qty')">수량</button><button type="button" id="pt-qt-u-margin" onclick="setPtQuickUnit('margin')">증거금</button></span>
+            </div>
+            <input type="text" id="pt-qt-amount" inputmode="decimal" autocomplete="off" placeholder="0" oninput="sanitizeNumericInput(this);ptQuickRender()" onkeydown="if(event.key==='Enter'){event.preventDefault();ptQuickSubmit();}">
+            <div class="pt-qt-pcts">
+              <button type="button" onclick="setPtQuickPercent(25)">25%</button><button type="button" onclick="setPtQuickPercent(50)">50%</button><button type="button" onclick="setPtQuickPercent(75)">75%</button><button type="button" onclick="setPtQuickPercent(100)">100%</button>
+            </div>
+            <div class="pt-qt-avail" id="pt-qt-avail"></div>
+            <div class="pt-qt-body" id="pt-qt-body"></div>
+            </div>
+            <button type="button" class="pt-qt-submit" id="pt-qt-submit" onclick="ptQuickSubmit()" disabled>지정가 주문 걸기</button>
+          </div>
           <div class="tradingview-widget-container pt-tv-fallback" id="paper-tv-widget-outer" style="display:none;"></div>
         </div>
         <div class="tv-loading-overlay pt-chart-overlay" id="pt-chart-overlay">
@@ -1047,20 +1205,32 @@
 
         <div class="pt-avail-row"><span>사용 가능</span><b id="pt-avail">-</b></div>
 
+        <div class="pt-mode-row">
+          <span class="pt-leverage-label">마진 모드</span>
+          <div class="pt-mode-seg" role="group" aria-label="마진 모드">
+            <button type="button" class="pt-mode-btn active" id="pt-mode-cross" onclick="setPtMarginMode('cross')">교차</button>
+            <button type="button" class="pt-mode-btn" id="pt-mode-isolated" onclick="setPtMarginMode('isolated')">격리</button>
+          </div>
+        </div>
+        <div class="pt-mode-desc" id="pt-mode-desc"></div>
+
         <div class="pt-leverage-row">
-          <span class="pt-leverage-label">레버리지 (격리)</span>
+          <span class="pt-leverage-label" id="pt-leverage-label">레버리지 (교차)</span>
           <span class="pt-leverage-value" id="pt-leverage-display">5x</span>
         </div>
         <input type="range" class="pt-leverage-slider" id="pt-leverage-slider" min="1" max="125" step="1" value="5" aria-label="레버리지" oninput="setPtLeverage(this.value)">
         <div class="pt-leverage-presets" id="pt-leverage-presets"></div>
-        <div class="pt-lock-note" id="pt-leverage-lock" style="display:none;">포지션이나 미체결 주문이 있는 동안에는 레버리지를 바꿀 수 없어요.</div>
+        <div class="pt-lock-note" id="pt-leverage-lock" style="display:none;">포지션이나 미체결 주문이 있는 동안에는 레버리지와 마진 모드를 바꿀 수 없어요.</div>
 
         <div class="pt-limit-row" id="pt-limit-row" style="display:none;">
           <label for="pt-limit-input">지정가 (USDT)</label>
           <div class="pt-input-with-btn">
-            <input type="text" id="pt-limit-input" inputmode="decimal" placeholder="0" oninput="sanitizeNumericInput(this);renderPtOrderPreviewFromInput()">
-            <button type="button" onclick="fillPtLimitCurrent()">현재가</button>
+            <button type="button" class="pt-step-btn" id="pt-limit-minus" onclick="stepPtLimit(-1)" aria-label="지정가 100 USDT 내리기" title="지정가 100 USDT 내리기 (입력칸에서 ↓ 키)">−100</button>
+            <input type="text" id="pt-limit-input" inputmode="decimal" placeholder="0" oninput="sanitizeNumericInput(this);renderPtOrderPreviewFromInput()" onkeydown="ptLimitKey(event)">
+            <button type="button" class="pt-step-btn" id="pt-limit-plus" onclick="stepPtLimit(1)" aria-label="지정가 100 USDT 올리기" title="지정가 100 USDT 올리기 (입력칸에서 ↑ 키)">+100</button>
+            <button type="button" id="pt-limit-current" onclick="fillPtLimitCurrent()">현재가</button>
           </div>
+          <div class="pt-limit-offset" id="pt-limit-offset"></div>
         </div>
 
         <div class="pt-margin-input-row">
@@ -1090,6 +1260,25 @@
           </div>
         </div>
 
+        <details class="pt-risk-box" id="pt-risk-box" ontoggle="onPtRiskToggle()">
+          <summary>위험 금액으로 증거금 계산</summary>
+          <div class="pt-risk-body">
+            <div class="chart-hint" style="margin:0 0 8px;">위쪽 손절가에서 잃을 금액(수수료 포함)이 입력한 위험이 되도록 증거금을 계산해요. 레버리지를 올려도 손절 시 손실은 그대로예요.</div>
+            <div class="pt-risk-inputs">
+              <input type="text" id="pt-risk-input" inputmode="decimal" placeholder="잃고 싶은 금액" aria-label="손절 시 위험 금액" oninput="onPtRiskInput()">
+              <select id="pt-risk-unit" aria-label="위험 금액 단위" onchange="onPtRiskInput()"><option value="pct">% (총 자산)</option><option value="usdt">USDT</option></select>
+            </div>
+            <div class="pt-percent-row" style="margin:6px 0 8px;">
+              <button type="button" onclick="setPtRiskQuick(0.5)">0.5%</button>
+              <button type="button" onclick="setPtRiskQuick(1)">1%</button>
+              <button type="button" onclick="setPtRiskQuick(2)">2%</button>
+              <button type="button" onclick="setPtRiskQuick(3)">3%</button>
+            </div>
+            <div id="pt-risk-result"></div>
+            <button type="button" class="pt-mini-btn pt-primary pt-risk-apply" id="pt-risk-apply" onclick="applyPtRiskMargin()" disabled>이 증거금 넣기</button>
+          </div>
+        </details>
+
         <div class="pt-order-preview" id="pt-order-preview">
           <div class="chart-hint">증거금을 입력하면 예상 수량과 청산가를 보여줘요.</div>
         </div>
@@ -1108,10 +1297,12 @@
           <button type="button" class="pt-btab active" id="pt-btab-position" onclick="setPtBottomTab('position')">포지션 <span class="pt-count" id="pt-count-position">0</span></button>
           <button type="button" class="pt-btab" id="pt-btab-orders" onclick="setPtBottomTab('orders')">미체결 주문 <span class="pt-count" id="pt-count-orders">0</span></button>
           <button type="button" class="pt-btab" id="pt-btab-history" onclick="setPtBottomTab('history')">거래 내역 <span class="pt-count" id="pt-count-history">0</span></button>
+          <button type="button" class="pt-btab" id="pt-btab-stats" onclick="setPtBottomTab('stats')">통계 <span class="pt-count" id="pt-count-stats">0</span></button>
         </div>
         <div id="pt-position-body"></div>
         <div id="pt-orders-body" style="display:none;"></div>
         <div id="pt-history-body" style="display:none;"></div>
+        <div id="pt-stats-body" style="display:none;"></div>
       </div>
     </div>
   </div>
@@ -1119,14 +1310,20 @@
   <details class="card pt-rules">
     <summary>모의투자 계산 방식 (실제 거래소와 다른 점)</summary>
     <ul>
-      <li>격리 마진 방식이고, 계좌마다 포지션은 1개(롱 또는 숏)만 가질 수 있어요. 같은 방향으로 추가 주문하면 평균 진입가로 합쳐져요.</li>
+      <li>계좌마다 포지션은 1개(롱 또는 숏)만 가질 수 있어요. 같은 방향으로 추가 주문하면 평균 진입가로 합쳐져요.</li>
+      <li>마진 모드는 기본이 교차(Cross)예요. 교차는 포지션 증거금에 사용 가능 잔고까지 더해서 버티기 때문에 청산가가 훨씬 멀어지지만(롱은 아예 청산가가 없을 수도 있어요), 청산되면 계좌 잔고를 모두 잃어요. 격리(Isolated)는 그 포지션에 넣은 증거금만 잃고 청산가는 더 가까워요. 모드는 포지션·미체결 주문이 없을 때만 바꿀 수 있어요.</li>
       <li>포지션 크기 = 증거금 × 레버리지, 수량 = 포지션 크기 ÷ 진입가예요. 증거금이 같아도 레버리지가 높으면 같은 가격 변동에 손익이 그만큼 커져요.</li>
       <li>수수료는 시장가 0.06%, 지정가 0.02%로 계산하고, 진입과 청산 때 각각 포지션 크기에 부과돼요. 펀딩비와 슬리피지는 반영하지 않아요.</li>
-      <li>청산가는 유지증거금율 0.4%를 적용한 단순 계산식이에요. 강제청산되면 해당 포지션의 증거금은 전부 사라져요.</li>
+      <li>청산가는 유지증거금율 0.4%를 적용한 단순 계산식이에요. 격리에서 강제청산되면 해당 포지션의 증거금이, 교차에서는 증거금과 사용 가능 잔고가 전부 사라져요. 교차 청산가는 미체결 주문에 예약된 금액을 뺀 잔고를 기준으로 하고, 잔고가 달라지면 청산가도 함께 달라져요.</li>
       <li>익절·손절은 시세가 지정 가격에 닿는 순간 그 가격으로 체결된 것으로 처리해요. 지정가 주문은 시세가 지정가에 닿으면 체결돼요.</li>
+      <li>걸어 둔 지정가 주문은 차트의 주문선을 끌어서 가격을 바꿀 수 있어요. 익절·손절, 청산가와 맞지 않는 가격이면 선이 빨갛게 바뀌고 놓으면 원래 가격으로 돌아가요. 롱 지정가 선을 현재가 위로(숏은 아래로) 끌어다 놓으면 지금 시세로 바로 시장가 체결돼요(선이 연두색으로 바뀌고, 증거금은 그대로 쓰되 수수료는 시장가 0.06%로 다시 계산해요).</li>
+      <li>빠른 거래: 차트 위에 마우스를 올리면 가격 눈금 왼쪽에 + 버튼이 떠요(폰에서는 차트를 한 번 탭). + 를 누르고 수량(또는 증거금)을 넣으면 그 가격에 지정가 주문이 걸려요. 현재가보다 낮으면 매수(롱), 높으면 매도(숏)로 자동 정해지고, 주문 패널의 지정가 주문과 같은 규칙·수수료로 처리돼요. 차트 위 '빠른 거래' 버튼으로 켜고 끌 수 있어요.</li>
       <li>지정가 주문은 개수 제한 없이 여러 개를 걸 수 있어요(잔고가 허락하는 만큼). 주문마다 증거금과 수수료가 예약되고, 익절·손절도 주문별로 따로 설정할 수 있어요. 주문이 체결되면 그 익절·손절이 포지션에 적용돼요.</li>
       <li>앱을 닫았다 다시 열었을 때처럼 가격이 한 번에 크게 움직였으면, 롱은 높은 가격부터 숏은 낮은 가격부터 가격이 지나간 순서대로 손절·청산·지정가 체결을 처리해요. 그래서 손절가보다 바깥에 걸어 둔 지정가는 손절이 먼저 일어난 뒤 새 포지션으로 체결돼요.</li>
       <li>시세는 바이낸스 BTCUSDT 현물 가격을 따라가요. 이 페이지를 열어둔 동안에만 청산·익절·손절·지정가 체결이 확인돼요.</li>
+      <li>통계 탭은 포지션 하나(분할 진입·분할 청산 포함)를 거래 1건으로 세고, 모든 손익은 수수료를 뺀 값이에요. 자산 곡선은 청산한 거래만 반영하고 평가손익은 넣지 않아요. 거래가 적을 때(전체 30건 미만, 구분별 5건 미만)의 숫자는 우연일 수 있으니 참고만 하세요.</li>
+      <li>'위험 금액으로 증거금 계산'은 위쪽 손절가에 닿을 때 잃을 금액(진입·청산 수수료 포함)이 입력한 값이 되도록 증거금을 역산해요. 레버리지를 바꿔도 손절 시 손실은 그대로이고 필요한 증거금만 달라져요. 손절가 앞에 청산가가 있으면 경고해요.</li>
+      <li>청산 기록은 계좌마다 최근 1,000건까지 보관해요. 넘으면 오래된 기록부터 정리되지만 그 손익은 '실현 손익 누계'에 남고, 필요한 기록은 CSV로 먼저 내보낼 수 있어요.</li>
     </ul>
   </details>
 </div>
@@ -1482,6 +1679,26 @@
       </div>
 
       <div class="settings-block">
+        <div class="settings-block-title">모의투자 체결음</div>
+        <label class="toggle-row">
+          <span class="toggle-label">체결될 때 소리 내기</span>
+          <span class="toggle-switch">
+            <input type="checkbox" id="settings-ptsound" onchange="setPtSoundOn(this.checked)">
+            <span class="toggle-slider"></span>
+          </span>
+        </label>
+        <div class="pt-leverage-row" style="margin-top:12px;">
+          <label class="pt-leverage-label" for="settings-ptsound-vol">볼륨</label>
+          <span class="pt-leverage-value" id="settings-ptsound-vol-display">70%</span>
+        </div>
+        <input type="range" class="pt-leverage-slider" id="settings-ptsound-vol" min="0" max="100" step="5" value="70" aria-label="체결음 볼륨" oninput="setPtSoundVolume(this.value)" onchange="testPtSound()">
+        <div class="row" style="margin-top:4px;">
+          <button type="button" class="btn secondary" onclick="testPtSound()">소리 들어보기</button>
+        </div>
+        <div class="chart-hint" style="margin-top:8px;">시장가 진입·지정가 체결·청산·익절·손절이 일어날 때 한 번 울려요(한꺼번에 여러 건이 체결돼도 한 번). 브라우저 정책상 페이지를 한 번 클릭하거나 터치한 뒤부터 소리가 나요. 모의투자 차트 위 '체결음' 버튼으로도 켜고 끌 수 있어요.</div>
+      </div>
+
+      <div class="settings-block">
         <div class="settings-block-title">저장된 데이터</div>
         <div class="result-row"><span class="label">관심 코인</span><span class="value" id="settings-stat-watchlist">-</span></div>
         <div class="result-row"><span class="label">매매 기록</span><span class="value" id="settings-stat-trades">-</span></div>
@@ -1497,6 +1714,15 @@
       </div>
 
       <div class="settings-block">
+        <div class="settings-block-title">저장 상태</div>
+        <div id="storage-status-body"></div>
+        <div class="row" style="margin-top:8px;">
+          <button type="button" class="btn secondary" onclick="runStorageTest()">저장 테스트</button>
+          <button type="button" class="btn secondary" onclick="exportData()">백업 내보내기</button>
+        </div>
+      </div>
+
+      <div class="settings-block">
         <div class="settings-block-title" style="color:var(--rise);">데이터 초기화</div>
         <div class="chart-hint" style="margin-bottom:8px;">모든 기록·설정·사진/동영상을 삭제하고 처음 상태로 되돌려요. 되돌릴 수 없으니 먼저 백업(JSON)을 내보내는 걸 추천해요.</div>
         <button class="btn secondary full" onclick="resetAllData()" style="color:var(--rise);border-color:var(--rise);">전체 데이터 초기화</button>
@@ -1506,22 +1732,74 @@
 </div>
 
 <script>
-// ===== 저장소 (localStorage, 실패 시 메모리로 대체) =====
+// ===== 저장소 (localStorage, 실패하면 메모리로 대체하고 화면에 알림) =====
+// memoryStore: 저장에 실패한 '가장 최신 값'. 이 창이 열려 있는 동안만 유지됨 (그래서 실패하면 반드시 사용자에게 알림)
 const memoryStore = {};
+let storageIssue = null;     // null | { kind:'full'|'blocked', keys:{키:true} }
+function storageFailKind(e){
+  const n = e && e.name ? String(e.name) : '';
+  if(n === 'QuotaExceededError' || n === 'NS_ERROR_DOM_QUOTA_REACHED' || (e && (e.code === 22 || e.code === 1014)) || /quota/i.test(n)) return 'full';
+  return 'blocked';
+}
+function renderStorageWarning(){
+  const box = document.getElementById('storage-warning');
+  if(!box) return;
+  if(!storageIssue){ box.style.display = 'none'; return; }
+  const msg = document.getElementById('storage-warning-msg');
+  if(msg){
+    msg.textContent = storageIssue.kind === 'full'
+      ? '브라우저 저장 공간이 가득 차서 방금 바꾼 내용을 저장하지 못했어요. 이 창을 닫거나 새로고침하면 사라질 수 있어요. 먼저 백업(JSON)을 내보내 두고, 오래된 일지·노트를 정리해주세요.'
+      : '이 브라우저가 데이터 저장을 막고 있어서 방금 바꾼 내용이 저장되지 않았어요. 이 창을 닫거나 새로고침하면 사라져요. (사생활 보호 모드, 앱 안의 브라우저, 사이트 데이터 차단일 때 생겨요) 일반 창의 크롬·사파리에서 열거나, 먼저 백업(JSON)을 내보내 두세요.';
+  }
+  box.style.display = 'block';
+}
+function noteStorageFailure(key, e){
+  if(!storageIssue) storageIssue = { kind:storageFailKind(e), keys:{} };
+  else if(storageFailKind(e) === 'full') storageIssue.kind = 'full';
+  if(!storageIssue.keys[key]) console.warn('[저장 실패]', key, e && e.name ? e.name : e);
+  storageIssue.keys[key] = true;
+  if(document.body) renderStorageWarning();
+  else document.addEventListener('DOMContentLoaded', renderStorageWarning);
+}
+function noteStorageRecovered(key){
+  if(!storageIssue || !storageIssue.keys[key]) return;
+  delete storageIssue.keys[key];
+  if(Object.keys(storageIssue.keys).length === 0) storageIssue = null;
+  renderStorageWarning();
+}
+// 저장 성공 여부(true/false)를 돌려줌. 쓴 값을 다시 읽어서 확인하므로, 에러 없이 조용히 실패하는 브라우저도 잡아냄
 function saveLocalQuiet(key, value){
-  try{ localStorage.setItem('coinstudy_'+key, JSON.stringify(value)); }
-  catch(e){ memoryStore[key] = value; }
+  let json;
+  try{ json = JSON.stringify(value); }
+  catch(e){ memoryStore[key] = value; noteStorageFailure(key, e); return false; }
+  try{
+    if(json === undefined){ localStorage.removeItem('coinstudy_'+key); }
+    else{
+      localStorage.setItem('coinstudy_'+key, json);
+      if(localStorage.getItem('coinstudy_'+key) !== json) throw new Error('readback_mismatch');
+    }
+    delete memoryStore[key];
+    noteStorageRecovered(key);
+    return true;
+  }catch(e){
+    memoryStore[key] = value;
+    noteStorageFailure(key, e);
+    return false;
+  }
 }
 function saveLocal(key, value){
-  saveLocalQuiet(key, value);
+  const ok = saveLocalQuiet(key, value);
   scheduleDriveAutoSync();
+  return ok;
 }
 function loadLocal(key, defVal){
+  // 저장에 실패해서 메모리에만 있는 값이 가장 최신이므로 먼저 돌려줌 (저장소에 남은 옛 값이 새 값을 가리면 안 됨)
+  if(memoryStore[key] !== undefined) return memoryStore[key];
   try{
     const v = localStorage.getItem('coinstudy_'+key);
     if(v !== null) return JSON.parse(v);
   }catch(e){}
-  return memoryStore[key] !== undefined ? memoryStore[key] : defVal;
+  return defVal;
 }
 
 // ===== 숫자 입력 검증 (매매일지·계산기: 한글/문자/기호 입력 차단) =====
@@ -1608,7 +1886,7 @@ const PT_MAX_ACCOUNTS = 5;
 let paperAccounts = loadLocal('paperAccounts', null);
 if(!paperAccounts || !Array.isArray(paperAccounts) || paperAccounts.length===0){
   paperAccounts = [{
-    id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5,
+    id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5, marginMode:'cross',
     createdAt:Date.now(), isDefault:true, position:null, orders:[], history:[]
   }];
   saveLocalQuiet('paperAccounts', paperAccounts);
@@ -2199,9 +2477,71 @@ async function refreshSettingsStats(){
     req.onerror = function(){ mediaEl.textContent = '-'; };
   }catch(e){ mediaEl.textContent = '-'; }
 }
+// 저장 상태 표시: 실제로 저장소에 들어 있는 계좌 수와 화면의 계좌 수를 비교하고, 용량을 많이 쓰는 항목을 보여줌
+const STORAGE_LABELS = { paperAccounts:'모의투자 계좌', trades:'매매 기록', analysisNotes:'분석 노트', studyNotes:'공부 노트', seedEntries:'시드 기록', events:'일정', watchlist:'관심 코인', dashCalMemos:'달력 메모' };
+function storageUsage(){
+  const out = { total:0, items:[], error:null };
+  try{
+    for(let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(!k || k.indexOf('coinstudy_') !== 0) continue;
+      const v = localStorage.getItem(k) || '';
+      const bytes = (k.length + v.length) * 2;   // 브라우저는 보통 글자당 2바이트로 셈
+      out.total += bytes;
+      out.items.push({ key:k.slice(10), bytes:bytes });
+    }
+    out.items.sort(function(a, b){ return b.bytes - a.bytes; });
+  }catch(e){ out.error = e; }
+  return out;
+}
+function fmtKB(b){ return b >= 1048576 ? (b / 1048576).toFixed(2) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+function renderStorageStatus(){
+  const el = document.getElementById('storage-status-body');
+  if(!el) return;
+  const row = function(l, v){ return '<div class="result-row"><span class="label">' + l + '</span><span class="value">' + v + '</span></div>'; };
+  const u = storageUsage();
+  let saved = null;
+  try{
+    const raw = localStorage.getItem('coinstudy_paperAccounts');
+    const arr = raw ? JSON.parse(raw) : null;
+    saved = Array.isArray(arr) ? arr.length : 0;
+  }catch(e){ saved = null; }
+  const shown = paperAccounts.length;
+  let html = '';
+  if(storageIssue) html += row('상태', '<span style="color:#D97706;font-weight:700;">저장 실패 (위 안내 확인)</span>');
+  else if(u.error) html += row('상태', '<span style="color:#D97706;font-weight:700;">저장소 접근 불가</span>');
+  else html += row('상태', '정상');
+  html += row('모의투자 계좌', saved === null ? '확인 불가' : (saved === shown ? shown + '개 저장됨' : '<span style="color:#D97706;font-weight:700;">화면 ' + shown + '개 / 저장 ' + saved + '개</span>'));
+  if(!u.error){
+    html += row('사용 중인 저장 공간', '약 ' + fmtKB(u.total) + ' <span style="color:var(--ink-dim);">(보통 한도 약 5 MB)</span>');
+    u.items.slice(0, 3).forEach(function(it){ html += row('· ' + (STORAGE_LABELS[it.key] || it.key), fmtKB(it.bytes)); });
+  }
+  el.innerHTML = html;
+}
+// 지금 이 브라우저가 실제로 저장되는지 확인 (쓰고, 다시 읽고, 지움)
+function runStorageTest(){
+  const k = 'coinstudy___probe';
+  const stamp = String(Date.now());
+  try{
+    localStorage.setItem(k, stamp);
+    const back = localStorage.getItem(k);
+    localStorage.removeItem(k);
+    if(back !== stamp) throw new Error('readback_mismatch');
+    // 예전에 저장에 실패해서 메모리에만 있던 항목을 지금 다시 저장해 봄
+    const pending = Object.keys(memoryStore);
+    pending.forEach(function(key){ saveLocalQuiet(key, memoryStore[key]); });
+    const left = Object.keys(memoryStore).length;
+    showToast('저장 테스트 통과: 이 브라우저에 정상적으로 저장돼요.' +
+      (pending.length ? (left === 0 ? ' 저장 못 했던 ' + pending.length + '개 항목도 지금 저장했어요.' : ' 다만 ' + left + '개 항목은 아직 저장되지 않아요. 저장 공간을 확인해주세요.') : ''));
+  }catch(e){
+    showToast(storageFailKind(e) === 'full' ? '저장 테스트 실패: 저장 공간이 가득 찼어요.' : '저장 테스트 실패: 이 브라우저가 저장을 막고 있어요.');
+  }
+  renderStorageStatus();
+}
 function openSettings(){
   document.getElementById('settings-appname').value = appName;
   refreshSettingsStats();
+  renderStorageStatus();
   renderGoogleSyncUI();
   document.getElementById('settings-overlay').classList.add('open');
   document.body.classList.add('chart-fs-lock');
@@ -3906,12 +4246,12 @@ function saveDashSessionTime(){
 }
 
 // ===== 모의투자 (BTC 무기한 선물 연습) =====
-// 단순화 모델: 격리 마진 / 계좌당 포지션 1개 / 펀딩비·슬리피지 없음
+// 단순화 모델: 교차(기본)·격리 마진 선택 / 계좌당 포지션 1개 / 펀딩비·슬리피지 없음
 const PT_MAKER_FEE = 0.0002;      // 지정가 체결 수수료 0.02%
 const PT_MIN_NOTIONAL = 5;        // 최소 주문 크기(포지션 크기) 5 USDT
 const PT_MAX_LEVERAGE = 125;
 const PT_LEVERAGE_PRESETS = [1, 3, 5, 10, 20, 50, 100, 125];
-const PT_HISTORY_LIMIT = 300;
+const PT_HISTORY_LIMIT = 1000;     // 계좌마다 보관하는 청산 기록 수 (넘으면 오래된 기록부터 지우고 그 손익은 누계에 남김)
 const PT_DUST_NOTIONAL = 1;        // 부분 청산 후 남는 포지션 크기가 이 값(USDT)보다 작으면 전부 청산
 const PT_STALE_MS = 20000;        // 시세가 이 시간(ms) 넘게 갱신 안 되면 주문·청산을 막음
 
@@ -3938,8 +4278,34 @@ function calcPtLiquidationPrice(side, entry, margin, notional){
   const ratio = margin / notional;
   return side === 'long' ? entry * (1 - ratio + PT_MMR) : entry * (1 + ratio - PT_MMR);
 }
-function ptPosLiq(pos){
-  return calcPtLiquidationPrice(pos.side, pos.entry, pos.margin, pos.qty * pos.entry);
+// 마진 모드: 'cross'(교차, 기본) | 'isolated'(격리). 값이 없으면 격리로 계산함 (예전 계좌는 normalizePaperAccounts에서 값이 채워짐)
+function ptMode(acc){
+  return acc && acc.marginMode === 'cross' ? 'cross' : 'isolated';
+}
+function ptModeLabel(acc){
+  return ptMode(acc) === 'cross' ? '교차' : '격리';
+}
+// 청산가 계산에 쓰는 '버틸 수 있는 자금'
+//  격리: 이 포지션의 증거금만 / 교차: 증거금 + 사용 가능 잔고 전부 (잔고가 많을수록 청산가가 멀어짐)
+//  reservedExtra: 아직 넣지 않은 주문이 잔고에서 가져갈 금액(증거금 + 수수료) — 미리보기·계획 계산용
+function ptLiqBuffer(acc, pos, reservedExtra){
+  if(ptMode(acc) !== 'cross') return pos.margin;
+  return Math.max(0, acc.balance - (reservedExtra || 0)) + pos.margin;
+}
+// 청산가. acc를 주면 그 계좌의 마진 모드를 따르고, 안 주면 격리 기준
+// (교차에서 롱은 잔고가 충분하면 0 이하가 될 수 있고, 이때는 청산가격이 존재하지 않음)
+function ptPosLiq(pos, acc, reservedExtra){
+  const buffer = acc ? ptLiqBuffer(acc, pos, reservedExtra) : pos.margin;
+  return calcPtLiquidationPrice(pos.side, pos.entry, buffer, pos.qty * pos.entry);
+}
+function ptLiqText(liq){
+  return liq > 0 ? formatPrice(liq) : '없음';
+}
+// 아직 주문하지 않은 주문이 잔고에서 가져갈 금액 (증거금 + 수수료)
+function ptExtraReserved(extra){
+  if(!extra) return 0;
+  const notional = extra.margin * extra.leverage;
+  return extra.margin + notional * (extra.kind === 'market' ? PT_FEE_RATE : PT_MAKER_FEE);
 }
 // 같은 방향 추가 주문 시 평균 진입가로 합친 가상 포지션
 function ptMergedPosition(pos, side, price, margin, leverage){
@@ -3955,6 +4321,10 @@ function ptOrdersOf(acc){
 }
 function ptReservedTotal(acc){
   return ptOrdersOf(acc).reduce(function(sum, o){ return sum + (o.reserved || 0); }, 0);
+}
+let ptHistIdSeq = 0;
+function ptNewHistoryId(){
+  return 'h' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36) + (ptHistIdSeq++).toString(36);
 }
 function ptNewOrderId(){
   return 'o' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36);
@@ -3983,7 +4353,7 @@ function ptSimulatePlan(acc, extra){
     if(o.tp) tp = o.tp;
     if(o.sl) sl = o.sl;
   });
-  return { pos:pos, tp:tp || null, sl:sl || null, liq:ptPosLiq(pos), count:orders.length };
+  return { pos:pos, tp:tp || null, sl:sl || null, liq:ptPosLiq(pos, acc, ptExtraReserved(extra)), count:orders.length };
 }
 // 분할 주문 중, 앞선 체결로 생긴 포지션의 청산가보다 바깥(롱: 아래, 숏: 위)에 있는 주문 목록.
 // 그 가격에 닿기 전에 청산되면 이 주문은 (청산 뒤) 새 포지션으로 체결됨. extra: 아직 넣기 전의 주문(선택)
@@ -3996,7 +4366,7 @@ function ptLadderLiqFlags(acc, extra){
   const flagged = [];
   ptOrdersInFillOrder(orders, side).forEach(function(o){
     if(pos){
-      const liq = ptPosLiq(pos);
+      const liq = ptPosLiq(pos, acc, ptExtraReserved(extra));
       if(side === 'long' ? o.price <= liq : o.price >= liq){ flagged.push(o); pos = null; }
     }
     pos = ptMergedPosition(pos, o.side, o.price, o.margin, o.leverage);
@@ -4007,16 +4377,30 @@ function ptLadderLiqFlags(acc, extra){
 function ptSlConflictAhead(acc){
   let pos = acc.position ? { side:acc.position.side, entry:acc.position.entry, qty:acc.position.qty, margin:acc.position.margin, leverage:acc.position.leverage } : null;
   let sl = acc.position ? acc.position.sl : null;
-  if(pos && sl && !ptSlIsEffective(pos.side, sl, ptPosLiq(pos))) return { orderPrice:null, sl:sl, liq:ptPosLiq(pos) };
+  if(pos && sl && !ptSlIsEffective(pos.side, sl, ptPosLiq(pos, acc))) return { orderPrice:null, sl:sl, liq:ptPosLiq(pos, acc) };
   const orders = ptOrdersOf(acc);
   if(!orders.length) return null;
   let found = null;
   ptOrdersInFillOrder(orders, orders[0].side).forEach(function(o){
     pos = ptMergedPosition(pos, o.side, o.price, o.margin, o.leverage);
     if(o.sl) sl = o.sl;
-    if(!found && sl && !ptSlIsEffective(o.side, sl, ptPosLiq(pos))) found = { orderPrice:o.price, sl:sl, liq:ptPosLiq(pos) };
+    if(!found && sl && !ptSlIsEffective(o.side, sl, ptPosLiq(pos, acc))) found = { orderPrice:o.price, sl:sl, liq:ptPosLiq(pos, acc) };
   });
   return found;
+}
+// 새 주문을 넣은 '직후'의 상태(잔고가 줄고, 시장가는 포지션에 합쳐지고, 지정가는 목록에 추가됨)에서 손절이 단계별로 유효한지.
+// 교차 마진은 주문에 묶이는 금액만큼 '버티는 잔고'가 줄어 지금 포지션의 청산가가 가까워지는데,
+// 지정가가 전부 체결된 최종 상태만 보면 이 중간 상태를 놓칠 수 있음 (o: { kind, side, price, margin, leverage, fee, tp, sl })
+function ptSlConflictAfterOrder(acc, o){
+  const trial = Object.assign({}, acc, { balance:acc.balance - (o.margin + o.fee) });
+  if(o.kind === 'market'){
+    const m = ptMergedPosition(acc.position, o.side, o.price, o.margin, o.leverage);
+    trial.position = { side:o.side, entry:m.entry, qty:m.qty, margin:m.margin, leverage:m.leverage,
+      tp:o.tp || (acc.position ? acc.position.tp : null), sl:o.sl || (acc.position ? acc.position.sl : null) };
+  }else{
+    trial.orders = ptOrdersOf(acc).concat([{ id:'__new', side:o.side, price:o.price, margin:o.margin, leverage:o.leverage, tp:o.tp || null, sl:o.sl || null }]);
+  }
+  return ptSlConflictAhead(trial);
 }
 // 분할 청산한 거래는 한 번의 거래로 셈: 같은 포지션(방향 + 최초 진입 시각)의 청산 기록을 합산하고,
 // 마지막 청산까지 끝난 포지션만 집계 (아직 열려 있는 포지션의 부분 청산 기록은 제외)
@@ -4035,6 +4419,218 @@ function ptTradeStats(history){
     else out.openPartialRows += g.partialRows;
   });
   return out;
+}
+// ---------- 복기(태그·메모) · 통계 · 위험 금액 기준 증거금 · CSV (화면과 무관한 계산) ----------
+const PT_NOTE_PRESET_TAGS = ['계획대로', '추세 추종', '역추세', '분할 진입', '추격 매매', '뇌동매매', '손절 지연', '익절 빠름', '과한 포지션', '근거 부족'];
+const PT_TAG_MAX = 8, PT_TAG_LEN = 12, PT_MEMO_LEN = 500;
+const PT_STAT_THIN_N = 5;      // 이 거래 수 미만인 구분은 '표본 적음'
+const PT_STAT_ENOUGH_N = 30;   // 전체 거래가 이 수 미만이면 통계는 참고용
+function ptCleanTags(list){
+  const out = [];
+  if(!Array.isArray(list)) return out;
+  list.forEach(function(t){
+    if(typeof t !== 'string') return;
+    const s = t.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, PT_TAG_LEN).trim();
+    if(s && out.indexOf(s) < 0 && out.length < PT_TAG_MAX) out.push(s);
+  });
+  return out;
+}
+function ptCleanMemo(m){
+  if(typeof m !== 'string') return '';
+  return m.replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, PT_MEMO_LEN).trim();
+}
+// 기록이 한도를 넘으면 가장 오래된 기록부터 지우되, 지운 기록의 손익은 누계에 남겨 둠(acc.trimmed)
+function ptTrimHistory(acc){
+  if(acc.history.length <= PT_HISTORY_LIMIT) return;
+  const dropped = acc.history.splice(PT_HISTORY_LIMIT);
+  if(!acc.trimmed || typeof acc.trimmed !== 'object') acc.trimmed = { rows:0, net:0 };
+  acc.trimmed.rows = (Number.isFinite(acc.trimmed.rows) ? acc.trimmed.rows : 0) + dropped.length;
+  acc.trimmed.net = (Number.isFinite(acc.trimmed.net) ? acc.trimmed.net : 0) + dropped.reduce(function(s, h){ return s + (Number.isFinite(h.net) ? h.net : 0); }, 0);
+}
+// 거래(= 포지션 하나) 목록. history(최신순)의 같은 포지션 기록을 합쳐서, 마지막 청산까지 끝난 포지션만 청산 시각 순서로 돌려줌
+function ptBuildTrades(history){
+  const groups = Object.create(null), order = [];   // 키가 '__proto__' 같은 이름이어도 안전하게
+  (history || []).forEach(function(h, idx){
+    const key = h.posId || (h.side + ':' + h.openedAt);   // 예전 기록은 posId가 없으므로 방향 + 최초 진입 시각으로 구분
+    let g = groups[key];
+    if(!g){ g = groups[key] = { key:key, rows:[], closed:false, idx:idx }; order.push(g); }
+    g.rows.push(h);
+    if(!h.partial) g.closed = true;
+  });
+  const trades = [];
+  order.forEach(function(g){
+    if(!g.closed) return;
+    const rows = g.rows;
+    const last = rows.find(function(r){ return !r.partial; }) || rows[0];
+    let net = 0, pnl = 0, fee = 0, margin = 0, qty = 0, entryVal = 0, exitVal = 0, levVal = 0, opened = Infinity, closed = -Infinity, entries = 1;
+    rows.forEach(function(h){
+      net += h.net; pnl += h.pnl; fee += h.fee; margin += h.margin; qty += h.qty;
+      entryVal += h.entry * h.qty; exitVal += h.exit * h.qty; levVal += h.leverage * h.margin;
+      if(h.openedAt < opened) opened = h.openedAt;
+      if(h.closedAt > closed) closed = h.closedAt;
+      if(h.entries > entries) entries = h.entries;
+    });
+    const tags = [], memos = [];
+    for(let i = rows.length - 1; i >= 0; i--){   // 오래된 기록부터
+      ptCleanTags(rows[i].tags).forEach(function(t){ if(tags.indexOf(t) < 0) tags.push(t); });
+      const m = ptCleanMemo(rows[i].memo);
+      if(m) memos.push(m);
+    }
+    trades.push({
+      key:g.key, side:last.side, net:net, pnl:pnl, fee:fee, margin:margin, qty:qty,
+      entry:qty > 0 ? entryVal / qty : last.entry, exit:qty > 0 ? exitVal / qty : last.exit,
+      leverage:margin > 0 ? levVal / margin : last.leverage,
+      openedAt:opened, closedAt:closed, holdMs:Math.max(0, closed - opened),
+      reason:last.reason, mode:(last.mode === 'cross' || last.mode === 'isolated') ? last.mode : null,
+      entries:entries, roi:margin > 0 ? net / margin : 0,
+      tags:tags, memo:memos.join(' / '), reviewed:tags.length > 0 || memos.length > 0, rowCount:rows.length, idx:g.idx
+    });
+  });
+  trades.sort(function(a, b){ return a.closedAt - b.closedAt || b.idx - a.idx; });
+  return trades;
+}
+// 거래 목록(오래된 순)의 요약 통계. base = 첫 거래 전 계좌 자산(실현 기준 자산 곡선의 시작점)
+function ptCalcStats(trades, base){
+  const n = trades.length;
+  const s = { total:n, wins:0, losses:0, flat:0, netSum:0, grossProfit:0, grossLoss:0, feeSum:0, best:null, worst:null,
+    maxWinStreak:0, maxLossStreak:0, holdSum:0, reviewed:0 };
+  let ws = 0, ls = 0, eq = base, peak = base;
+  const curve = [{ i:0, t:null, equity:base }];
+  let mdd = { amount:0, pct:0, peak:base, trough:base, atIndex:0 };
+  trades.forEach(function(t, i){
+    s.netSum += t.net; s.feeSum += t.fee; s.holdSum += t.holdMs;
+    if(t.reviewed) s.reviewed++;
+    if(t.net > 0){ s.wins++; s.grossProfit += t.net; ws++; ls = 0; }
+    else if(t.net < 0){ s.losses++; s.grossLoss += -t.net; ls++; ws = 0; }
+    else{ s.flat++; ws = 0; ls = 0; }
+    if(ws > s.maxWinStreak) s.maxWinStreak = ws;
+    if(ls > s.maxLossStreak) s.maxLossStreak = ls;
+    if(s.best === null || t.net > s.best) s.best = t.net;
+    if(s.worst === null || t.net < s.worst) s.worst = t.net;
+    eq += t.net;
+    curve.push({ i:i + 1, t:t.closedAt, equity:eq });
+    if(eq > peak) peak = eq;
+    if(peak > 0){
+      const dd = peak - eq, pct = dd / peak * 100;
+      if(pct > mdd.pct) mdd = { amount:dd, pct:pct, peak:peak, trough:eq, atIndex:i + 1 };
+    }
+  });
+  s.curStreak = ws > 0 ? { type:'win', n:ws } : (ls > 0 ? { type:'loss', n:ls } : { type:null, n:0 });
+  s.winRate = n ? s.wins / n : null;
+  s.avgWin = s.wins ? s.grossProfit / s.wins : null;
+  s.avgLoss = s.losses ? -s.grossLoss / s.losses : null;   // 음수
+  s.payoff = (s.avgWin !== null && s.avgLoss !== null) ? s.avgWin / -s.avgLoss : null;
+  s.profitFactor = s.grossLoss > 0 ? s.grossProfit / s.grossLoss : (s.grossProfit > 0 ? Infinity : null);
+  s.expectancy = n ? s.netSum / n : null;
+  s.avgHoldMs = n ? s.holdSum / n : null;
+  s.reviewRate = n ? s.reviewed / n : null;
+  s.curve = curve;
+  s.mdd = mdd;
+  s.endEquity = eq;
+  return s;
+}
+// 한국 시간(UTC+9) 기준 날짜 읽기: ptKstDate(ms).getUTCDay() / getUTCHours() ...
+const PT_KST_MS = 9 * 3600 * 1000;
+function ptKstDate(ms){ return new Date(ms + PT_KST_MS); }
+function ptKstString(ms){
+  const d = ptKstDate(ms), p = function(n){ return String(n).padStart(2, '0'); };
+  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds());
+}
+function ptHoldBucket(ms){ const m = ms / 60000; return m < 15 ? '0' : m < 60 ? '1' : m < 240 ? '2' : m < 1440 ? '3' : '4'; }
+function ptLevBucket(l){ const x = Math.round(l); return x <= 5 ? '0' : x <= 20 ? '1' : x <= 50 ? '2' : '3'; }
+function ptFmtHold(ms){
+  const m = Math.floor(ms / 60000);
+  if(m < 1) return '1분 미만';
+  if(m < 60) return m + '분';
+  const h = Math.floor(m / 60);
+  if(h < 24) return h + '시간' + (m % 60 ? ' ' + (m % 60) + '분' : '');
+  const d = Math.floor(h / 24);
+  return d + '일' + (h % 24 ? ' ' + (h % 24) + '시간' : '');
+}
+// 통계 탭의 '구분' 기준들. keysOf(거래) → 그 거래가 속하는 구분 키 목록 (태그는 여러 개일 수 있음)
+const PT_STAT_DIMS = [
+  { k:'side', label:'방향', order:['long', 'short'], names:{ long:'롱', short:'숏' }, keysOf:function(t){ return [t.side]; } },
+  { k:'reason', label:'청산 방식', order:['manual', 'tp', 'sl', 'liq'], names:{ manual:'수동 청산', tp:'익절', sl:'손절', liq:'강제청산' },
+    keysOf:function(t){ return [(t.reason === 'tp' || t.reason === 'sl' || t.reason === 'liq') ? t.reason : 'manual']; } },
+  { k:'weekday', label:'요일', order:['1', '2', '3', '4', '5', '6', '0'], names:{ '0':'일', '1':'월', '2':'화', '3':'수', '4':'목', '5':'금', '6':'토' },
+    keysOf:function(t){ return [String(ptKstDate(t.openedAt).getUTCDay())]; } },
+  { k:'hour', label:'시간대', order:['0', '1', '2', '3', '4', '5'], names:{ '0':'00~04시', '1':'04~08시', '2':'08~12시', '3':'12~16시', '4':'16~20시', '5':'20~24시' },
+    keysOf:function(t){ return [String(Math.floor(ptKstDate(t.openedAt).getUTCHours() / 4))]; } },
+  { k:'hold', label:'보유 시간', order:['0', '1', '2', '3', '4'], names:{ '0':'15분 미만', '1':'15분~1시간', '2':'1~4시간', '3':'4시간~1일', '4':'1일 이상' },
+    keysOf:function(t){ return [ptHoldBucket(t.holdMs)]; } },
+  { k:'lev', label:'레버리지', order:['0', '1', '2', '3'], names:{ '0':'5x 이하', '1':'6~20x', '2':'21~50x', '3':'50x 초과' },
+    keysOf:function(t){ return [ptLevBucket(t.leverage)]; } },
+  { k:'mode', label:'마진 모드', order:['cross', 'isolated', 'none'], names:{ cross:'교차', isolated:'격리', none:'기록 없음' },
+    keysOf:function(t){ return [t.mode || 'none']; } },
+  { k:'tag', label:'태그', order:null, names:{ __none:'(태그 없음)' }, keysOf:function(t){ return t.tags.length ? t.tags : ['__none']; } }
+];
+// 한 기준으로 나눈 표: [{ key, name, n, wins, winRate, avg, net, thin }] (거래가 있는 구분만). 태그는 손실이 큰 순서
+function ptStatTable(trades, dimKey){
+  const dim = PT_STAT_DIMS.find(function(d){ return d.k === dimKey; });
+  if(!dim) return [];
+  const map = Object.create(null);   // 태그 이름이 '__proto__'·'constructor'여도 통계가 깨지거나 오염되지 않게
+  trades.forEach(function(t){
+    dim.keysOf(t).forEach(function(k){
+      const g = map[k] || (map[k] = { key:k, n:0, wins:0, net:0 });
+      g.n++; g.net += t.net;
+      if(t.net > 0) g.wins++;
+    });
+  });
+  let keys = dim.order ? dim.order.filter(function(k){ return map[k]; }) : Object.keys(map);
+  if(!dim.order){
+    keys.sort(function(a, b){
+      if(a === '__none') return 1;
+      if(b === '__none') return -1;
+      return map[a].net - map[b].net || map[b].n - map[a].n || (a < b ? -1 : 1);
+    });
+  }
+  return keys.map(function(k){
+    const g = map[k];
+    return { key:k, name:Object.prototype.hasOwnProperty.call(dim.names, k) ? dim.names[k] : k, n:g.n, wins:g.wins, winRate:g.wins / g.n, avg:g.net / g.n, net:g.net, thin:g.n < PT_STAT_THIN_N };
+  });
+}
+// 손절가에서 잃을 금액(수수료 포함)이 risk(USDT)가 되도록 하는 증거금. 이 주문 하나만 기준(기존 포지션의 손익은 따로).
+// 포지션 크기 1 USDT당 손절 시 손실 = 손실폭(|진입−손절|/진입) + 진입 수수료율 + 청산 수수료율 × 손절가/진입가 (손절 청산은 시장가 수수료)
+function ptRiskSizing(p){
+  const risk = p.risk, e = p.entry, s = p.sl, lev = p.leverage, fe = p.entryFeeRate, bal = p.balance;
+  if(!(risk > 0) || !(e > 0) || !(s > 0) || !(lev >= 1) || !(bal >= 0) || !(fe >= 0) || !isFinite(risk + e + s + lev + fe + bal)) return { ok:false, reason:'input' };
+  if(s === e) return { ok:false, reason:'same' };
+  const d = Math.abs(e - s) / e;
+  const unit = d + fe + PT_FEE_RATE * s / e;
+  let notional = risk / unit;
+  const maxNotional = bal / (1 / lev + fe);   // 증거금 + 진입 수수료 <= 사용 가능 잔고
+  let capped = false;
+  if(notional > maxNotional){ notional = maxNotional; capped = true; }
+  const margin = Math.floor(notional / lev * 100) / 100;   // 센트 단위 내림: 실제 위험이 입력값을 넘지 않게
+  if(!(margin > 0)) return { ok:false, reason:'tiny', unit:unit, capped:capped };
+  notional = margin * lev;
+  return { ok:true, margin:margin, notional:notional, qty:notional / e, fee:notional * fe, loss:notional * unit, capped:capped,
+    d:d, unit:unit, maxRisk:maxNotional * unit, belowMin:notional < PT_MIN_NOTIONAL };
+}
+// ---- CSV 내보내기 ----
+function ptCsvCell(v){
+  let s = (v === null || v === undefined) ? '' : String(v);
+  if(typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;   // 엑셀이 수식으로 실행하지 않게
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function ptCsvNum(n){ return Number.isFinite(n) ? String(parseFloat(n.toFixed(8))) : ''; }
+const PT_CSV_HEAD = ['계좌', '청산 시각(KST)', '진입 시각(KST)', '방향', '레버리지', '마진 모드', '평균 진입가', '청산가', '수량(BTC)', '증거금(USDT)',
+  '손익(USDT, 수수료 전)', '수수료(USDT)', '순손익(USDT)', '청산 방식', '분할 청산', '분할 진입 횟수', '보유 시간(분)', '태그', '메모', '포지션 ID'];
+// accounts: 계좌 목록. 청산 기록 한 줄이 CSV 한 줄 (오래된 것부터)
+function ptHistoryCsv(accounts){
+  const lines = [PT_CSV_HEAD.map(ptCsvCell).join(',')];
+  accounts.forEach(function(a){
+    (a.history || []).slice().sort(function(x, y){ return x.closedAt - y.closedAt; }).forEach(function(h){
+      const T = ptCsvCell, N = ptCsvNum;   // 글자는 T(수식처럼 보이면 무력화·따옴표 처리), 숫자는 N(음수도 숫자 그대로)
+      lines.push([
+        T(a.name), T(ptKstString(h.closedAt)), T(ptKstString(h.openedAt)), T(h.side === 'long' ? '롱' : '숏'), N(h.leverage),
+        T(h.mode === 'cross' ? '교차' : (h.mode === 'isolated' ? '격리' : '')), N(h.entry), N(h.exit), N(h.qty), N(h.margin),
+        N(h.pnl), N(h.fee), N(h.net), T(ptReasonLabel(h)), T(h.partial ? 'Y' : ''), N(h.entries >= 1 ? h.entries : 1),
+        N(Math.max(0, h.closedAt - h.openedAt) / 60000), T(ptCleanTags(h.tags).join(' | ')), T(ptCleanMemo(h.memo)), T(h.posId || '')
+      ].join(','));
+    });
+  });
+  return lines.join('\r\n');
 }
 // 지정가 주문 가격이 손절가보다 바깥이면(롱: 손절가 이하, 숏: 손절가 이상) 손절이 먼저 일어나 이 주문은 새 포지션으로 체결됨.
 // 해당하는 손절가를 돌려주고, 없으면 null
@@ -4094,12 +4690,12 @@ function ptFmtTime(ts){
 // ---------- 계좌 상태 ----------
 function normalizePaperAccounts(){
   if(!Array.isArray(paperAccounts) || paperAccounts.length === 0){
-    paperAccounts = [{ id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5,
+    paperAccounts = [{ id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5, marginMode:'cross',
       createdAt:Date.now(), isDefault:true, position:null, orders:[], history:[] }];
   }
   paperAccounts = paperAccounts.filter(function(a){ return a && typeof a === 'object' && a.id; });
   if(paperAccounts.length === 0){
-    paperAccounts = [{ id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5,
+    paperAccounts = [{ id:'acc-1', name:'계좌 1', balance:10000, initialBalance:10000, leverage:5, marginMode:'cross',
       createdAt:Date.now(), isDefault:true, position:null, orders:[], history:[] }];
   }
   paperAccounts.forEach(function(a, i){
@@ -4109,11 +4705,37 @@ function normalizePaperAccounts(){
     if(!(a.leverage >= 1 && a.leverage <= PT_MAX_LEVERAGE)) a.leverage = 5;
     a.leverage = Math.round(a.leverage);
     if(!Array.isArray(a.history)) a.history = [];
+    // 마진 모드: 값이 없는 예전 계좌 중 포지션·주문이 열려 있는 계좌는 그 거래가 격리 기준으로 만들어졌으므로 격리를 유지하고
+    // (모두 정리되면 교차로 바뀜), 그 외 계좌는 기본값인 교차로 시작
+    if(a.marginMode !== 'cross' && a.marginMode !== 'isolated'){
+      const busy = !!(a.position && typeof a.position === 'object') || (Array.isArray(a.orders) && a.orders.length > 0) || (a.pending && typeof a.pending === 'object');
+      a.marginMode = busy ? 'isolated' : 'cross';
+      if(busy) a.modeAuto = true;
+    }
+    if(a.modeAuto && a.marginMode !== 'isolated') delete a.modeAuto;
     // 거래 내역: 화면에 그릴 때 필요한 숫자가 모두 있는 기록만 남김 (깨진 기록 하나 때문에 화면이 멈추지 않게)
     a.history = a.history.filter(function(h){
       return h && typeof h === 'object' && (h.side === 'long' || h.side === 'short') &&
         ['entry', 'exit', 'qty', 'margin', 'leverage', 'pnl', 'fee', 'net', 'openedAt', 'closedAt'].every(function(k){ return Number.isFinite(h[k]); });
     });
+    // 복기를 거래 하나하나에 붙이려면 기록마다 겹치지 않는 id가 필요함 (예전 기록에 id가 없거나 겹치면 정해진 규칙으로 새로 부여)
+    const seenHistId = Object.create(null);
+    a.history.forEach(function(h){
+      if(typeof h.id === 'string' && h.id && !seenHistId[h.id]){ seenHistId[h.id] = true; return; }
+      let n = 0, nid;
+      do{ nid = 'x' + Math.floor(h.closedAt).toString(36) + '-' + (n++); }while(seenHistId[nid]);
+      h.id = nid;
+      seenHistId[nid] = true;
+    });
+    // 복기 태그·메모: 형식이 깨진 값은 정리하고 비어 있으면 지움. 지워진 오래된 기록의 손익(trimmed)도 숫자가 아니면 버림
+    a.history.forEach(function(h){
+      if(h.tags !== undefined){ const t = ptCleanTags(h.tags); if(t.length) h.tags = t; else delete h.tags; }
+      if(h.memo !== undefined){ const m = ptCleanMemo(h.memo); if(m) h.memo = m; else delete h.memo; }
+    });
+    if(a.trimmed !== undefined){
+      if(a.trimmed && typeof a.trimmed === 'object' && Number.isFinite(a.trimmed.net) && Number.isFinite(a.trimmed.rows) && a.trimmed.rows >= 0) a.trimmed = { rows:Math.floor(a.trimmed.rows), net:a.trimmed.net };
+      else delete a.trimmed;
+    }
     if(!a.position || typeof a.position !== 'object') a.position = null;
     // 예전 버전은 미체결 주문을 1개(pending)만 저장했음 → 여러 개를 담는 orders 목록으로 옮김
     if(!Array.isArray(a.orders)) a.orders = [];
@@ -4160,8 +4782,9 @@ function getCurrentPaperAccount(){
   return found || paperAccounts[0];
 }
 function savePaperState(){
-  saveLocal('paperAccounts', paperAccounts);
-  saveLocal('paperCurrentAccountId', paperCurrentAccountId);
+  const a = saveLocal('paperAccounts', paperAccounts);
+  const b = saveLocal('paperCurrentAccountId', paperCurrentAccountId);
+  return a && b;
 }
 function ptHasOpenOrders(){
   return paperAccounts.some(function(a){ return a.position || ptOrdersOf(a).length > 0; });
@@ -4204,15 +4827,16 @@ function addPaperAccount(){
   while(paperAccounts.some(function(a){ return a.name === '계좌 ' + n; })) n++;
   const acc = {
     id:'acc-' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36),
-    name:'계좌 ' + n, balance:amount, initialBalance:amount, leverage:5,
+    name:'계좌 ' + n, balance:amount, initialBalance:amount, leverage:5, marginMode:'cross',
     createdAt:Date.now(), isDefault:false, position:null, orders:[], history:[]
   };
   paperAccounts.push(acc);
   paperCurrentAccountId = acc.id;
-  savePaperState();
+  const saved = savePaperState();
   togglePtAccountForm(false);
   renderPaperTrading();
-  showToast(acc.name + '을(를) 만들었어요. (' + ptMoney(amount) + ' USDT · 5x)');
+  showToast(acc.name + '을(를) 만들었어요. (' + ptMoney(amount) + ' USDT · 5x · 교차)' +
+    (saved ? '' : ' 그런데 브라우저에 저장하지 못했어요! 화면 위 안내를 확인하고 백업을 내보내 주세요.'));
 }
 function deletePaperAccount(id){
   const acc = paperAccounts.find(function(a){ return a.id === id; });
@@ -4236,6 +4860,7 @@ function resetPaperAccount(){
   acc.position = null;
   acc.orders = [];
   acc.history = [];
+  delete acc.trimmed;
   ptTpslDirty = false;
   savePaperState();
   renderPaperTrading();
@@ -4330,6 +4955,11 @@ function setPtFeedStatus(){
 }
 
 // ---------- 체결 / 청산 ----------
+// 체결(시장가 진입·지정가 체결·청산·익절·손절)이 일어났다고 화면 쪽(체결음 등)에 알려주는 훅. 계산에는 영향이 없고, 훅에서 오류가 나도 무시함
+let ptExecutionHook = null;
+function ptNotifyExecution(){
+  if(ptExecutionHook){ try{ ptExecutionHook(); }catch(e){} }
+}
 function ptAddOrMergePosition(acc, side, price, margin, leverage, fee, tp, sl){
   const merged = ptMergedPosition(acc.position, side, price, margin, leverage);
   if(!acc.position){
@@ -4347,6 +4977,7 @@ function ptAddOrMergePosition(acc, side, price, margin, leverage, fee, tp, sl){
     if(tp) pos.tp = tp;
     if(sl) pos.sl = sl;
   }
+  ptNotifyExecution();
 }
 // pct: 1~100 (100 = 전량). reason: manual | tp | sl | liq
 function closePtPosition(acc, pct, exitPrice, reason){
@@ -4357,27 +4988,32 @@ function closePtPosition(acc, pct, exitPrice, reason){
   const qty = pos.qty * ratio;
   const margin = pos.margin * ratio;
   const openFee = pos.feePaid * ratio;
-  let pnl, closeFee, back;
+  const cross = ptMode(acc) === 'cross';
+  let pnl, closeFee, back, lostBalance = 0;
   if(reason === 'liq'){
-    pnl = -margin;          // 증거금 전액 손실
+    // 격리: 이 포지션의 증거금 전액 손실 / 교차: 증거금 + 사용 가능 잔고 전부 손실 (청산가는 그 합계가 바닥날 때의 가격)
+    lostBalance = cross ? Math.max(0, acc.balance) : 0;
+    pnl = -(margin + lostBalance);
     closeFee = 0;
     back = 0;
+    acc.balance -= lostBalance;
   }else{
     pnl = calcPtPnl(pos.side, pos.entry, exitPrice, qty);
     closeFee = qty * exitPrice * PT_FEE_RATE;
-    back = Math.max(0, margin + pnl - closeFee);   // 격리 마진: 손실은 증거금까지만
+    back = margin + pnl - closeFee;
+    if(!cross) back = Math.max(0, back);   // 격리: 손실은 증거금까지만 / 교차: 증거금을 넘는 손실은 사용 가능 잔고에서 빠짐
   }
-  const net = back - margin - openFee;
+  const net = back - margin - openFee - lostBalance;
   acc.balance += back;
   const rec = {
-    id:'h' + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36),
+    id:ptNewHistoryId(),
     side:pos.side, entry:pos.entry, exit:exitPrice, qty:qty, margin:margin, leverage:pos.leverage,
-    pnl:pnl, fee:openFee + closeFee, net:net, reason:reason, partial:ratio < 1,
+    pnl:pnl, fee:openFee + closeFee, net:net, reason:reason, partial:ratio < 1, mode:ptMode(acc),
     openedAt:pos.openedAt, closedAt:Date.now(), entries:(pos.entries >= 1 ? pos.entries : 1),
     posId:pos.id || (pos.side + ':' + pos.openedAt)
   };
   acc.history.unshift(rec);
-  if(acc.history.length > PT_HISTORY_LIMIT) acc.history.length = PT_HISTORY_LIMIT;
+  ptTrimHistory(acc);
   if(ratio >= 1){
     acc.position = null;
   }else{
@@ -4385,6 +5021,7 @@ function closePtPosition(acc, pct, exitPrice, reason){
     pos.margin -= margin;
     pos.feePaid -= openFee;
   }
+  ptNotifyExecution();
   return rec;
 }
 function ptReasonLabel(rec){
@@ -4427,7 +5064,7 @@ function ptProcessAccount(acc, price, notes){
     };
     let liq = null;
     if(pos){
-      liq = ptPosLiq(pos);
+      liq = ptPosLiq(pos, acc);
       if(pos.sl && ptSlIsEffective(side, pos.sl, liq) && (isLong ? price <= pos.sl : price >= pos.sl)) take('sl', pos.sl);
       if(isLong ? price <= liq : price >= liq) take('liq', liq);
     }
@@ -4448,14 +5085,14 @@ function ptProcessAccount(acc, price, notes){
       notes.push(tag + '손절가 도달: ' + sideName + ' 청산 (' + ptSigned(rec.net) + ' USDT)');
     }else{
       closePtPosition(acc, 100, liq, 'liq');
-      notes.push(tag + sideName + ' 포지션이 강제청산됐어요 (청산가 ' + formatPrice(liq) + ')');
+      notes.push(tag + sideName + ' 포지션이 강제청산됐어요 (청산가 ' + formatPrice(liq) + ')' + (ptMode(acc) === 'cross' ? ' · 교차 마진이라 계좌 잔고가 모두 사라졌어요' : ''));
     }
   }
   flush();
   const p0 = acc.position;
   if(!p0) return;
-  if(anyFill && !ptSlIsEffective(p0.side, p0.sl, ptPosLiq(p0))){
-    notes.push(tag + '평균 진입가가 바뀌어 손절가(' + formatPrice(p0.sl) + ')가 청산가(' + formatPrice(ptPosLiq(p0)) + ')보다 멀어졌어요. 손절가를 다시 설정해주세요.');
+  if(anyFill && !ptSlIsEffective(p0.side, p0.sl, ptPosLiq(p0, acc))){
+    notes.push(tag + '평균 진입가가 바뀌어 손절가(' + formatPrice(p0.sl) + ')가 청산가(' + ptLiqText(ptPosLiq(p0, acc)) + ')보다 멀어졌어요. 손절가를 다시 설정해주세요.');
   }
   if(p0.tp && (p0.side === 'long' ? price >= p0.tp : price <= p0.tp)){
     const rec = closePtPosition(acc, 100, p0.tp, 'tp');
@@ -4484,6 +5121,32 @@ function updatePaperTradingTick(){
 // ---------- 레버리지 / 증거금 입력 ----------
 function ptLeverageLocked(acc){
   return !!(acc.position || ptOrdersOf(acc).length > 0);
+}
+// 모드 값이 없던 예전 계좌가 열린 거래를 격리로 이어가다가, 포지션·주문이 모두 정리되면 기본값인 교차로 바꿈
+function ptSettleAutoMode(acc){
+  if(acc && acc.modeAuto && !ptLeverageLocked(acc)){
+    acc.marginMode = 'cross';
+    delete acc.modeAuto;
+    saveLocal('paperAccounts', paperAccounts);
+    return true;
+  }
+  return false;
+}
+function setPtMarginMode(mode){
+  if(mode !== 'cross' && mode !== 'isolated') return;
+  const acc = getCurrentPaperAccount();
+  if(ptLeverageLocked(acc)){
+    showToast('포지션이나 미체결 주문이 있는 동안에는 마진 모드를 바꿀 수 없어요.');
+    renderPtLeverage();
+    return;
+  }
+  if(acc.marginMode === mode){ renderPtLeverage(); return; }
+  acc.marginMode = mode;
+  delete acc.modeAuto;
+  saveLocal('paperAccounts', paperAccounts);
+  renderPtLeverage();
+  renderPtOrderPreviewFromInput();
+  showToast(acc.name + ': ' + (mode === 'cross' ? '교차' : '격리') + ' 마진으로 바꿨어요.');
 }
 function setPtLeverage(v){
   const acc = getCurrentPaperAccount();
@@ -4554,6 +5217,40 @@ function fillPtLimitCurrent(){
   ptEl('pt-limit-input').value = String(Math.round(ptBtc.price * 100) / 100);
   renderPtOrderPreviewFromInput();
 }
+// 지정가 입력칸의 -100 / +100 버튼 (입력칸의 ↑·↓ 키도 같음): 입력칸에 있는 가격에서 100 USDT씩 올리고 내림.
+// 입력칸이 비어 있으면 현재가에서 시작. '현재가' 버튼으로 현재가로 되돌릴 수 있고, 입력칸 아래에 현재가와의 차이가 보임
+const PT_LIMIT_STEP = 100;
+const PT_LIMIT_STEP_MAX = 1e9;   // 버튼으로는 이 가격까지만 (너무 커서 지수 표기로 바뀌는 걸 막음)
+// value: 입력칸의 가격(없으면 null), dir: +1 | -1, cur: 현재가(없으면 null). 센트 단위로 반올림, 0 이하가 되면 null
+function ptStepPrice(value, dir, cur){
+  const base = (value > 0 && isFinite(value)) ? value : ((cur > 0 && isFinite(cur)) ? cur : null);
+  if(base === null) return null;
+  const next = Math.round((base + (dir < 0 ? -PT_LIMIT_STEP : PT_LIMIT_STEP)) * 100) / 100;
+  return (next > 0 && next <= PT_LIMIT_STEP_MAX) ? next : null;
+}
+function stepPtLimit(dir){
+  const v = ptReadNumber('pt-limit-input');
+  const cur = ptBtc.price ? Math.round(ptBtc.price * 100) / 100 : null;
+  if(v === null && cur === null){ showToast('현재 시세를 아직 받아오지 못했어요.'); return; }
+  const next = ptStepPrice(v, dir, cur);
+  if(next === null){ showToast('지정가는 0보다 크고 10억 이하여야 해요.'); return; }
+  ptEl('pt-limit-input').value = String(next);
+  renderPtOrderPreviewFromInput();
+}
+function ptLimitKey(e){
+  if(e.key === 'ArrowUp'){ e.preventDefault(); stepPtLimit(1); }
+  else if(e.key === 'ArrowDown'){ e.preventDefault(); stepPtLimit(-1); }
+}
+// 입력칸 아래 안내: 입력한 지정가가 현재가보다 얼마나 위/아래인지 (현재가 기준)
+function renderPtLimitOffset(){
+  const el = ptEl('pt-limit-offset');
+  if(!el) return;
+  const cur = ptBtc.price, v = ptReadNumber('pt-limit-input');
+  if(!cur || !v){ el.textContent = ''; return; }
+  const diff = v - cur;
+  const tail = Math.abs(diff) < 0.005 ? ' · 현재가와 같아요' : (diff < 0 ? ' · 매수(롱) 가격대' : ' · 매도(숏) 가격대');
+  el.textContent = '현재가 대비 ' + ptSigned(diff) + ' (' + ptPct(diff / cur * 100) + ')' + tail;
+}
 function ptPriceStaleMsg(){
   if(!ptBtc.price) return '현재 BTC 시세를 아직 받아오지 못했어요. 잠시 후 다시 시도해주세요.';
   const age = Date.now() - (ptBtc.ts || 0);
@@ -4590,85 +5287,108 @@ function ptValidateTpSl(side, ref, tp, sl, liq){
 }
 
 // ---------- 주문 ----------
-function openPtPosition(side){
+// 주문 하나를 검증하고 실제로 넣음. 주문 패널(openPtPosition)과 차트의 '빠른 거래'가 같은 규칙을 쓰도록 한 곳에 모아 둠.
+// p = { side, isLimit, margin, limit, tp, sl, dryRun, fromPanel }  (margin·limit·tp·sl은 숫자 또는 비어 있음)
+// dryRun이면 검증까지만 하고 아무것도 바꾸지 않음. 결과: { ok:false, msg } | { ok:true, msg, kind, info }
+function ptSideConflictMsg(acc, side){
+  if(acc.position && acc.position.side !== side){
+    return '이미 ' + (acc.position.side === 'long' ? '롱' : '숏') + ' 포지션이 있어요. 반대 방향으로 진입하려면 먼저 청산해주세요.';
+  }
+  if(ptOrdersOf(acc).length && acc.orders[0].side !== side) return '반대 방향 미체결 주문이 있어요. 먼저 취소해주세요.';
+  return null;
+}
+function ptSubmitOrder(p){
   const acc = getCurrentPaperAccount();
   const price = ptBtc.price;
+  const fail = function(msg){ return { ok:false, msg:msg }; };
   const staleMsg = ptPriceStaleMsg();
-  if(staleMsg){ showToast(staleMsg); return; }
-  const isLimit = ptOrderType === 'limit';
-  const margin = ptReadNumber('pt-margin-input');
-  if(!margin){ showToast('증거금(USDT)을 입력해주세요.'); return; }
+  if(staleMsg) return fail(staleMsg);
+  const side = p.side;
+  const isLimit = !!p.isLimit;
+  const margin = p.margin;
+  if(!margin) return fail('증거금(USDT)을 입력해주세요.');
   const lev = acc.leverage;
   const notional = margin * lev;
-  if(notional < PT_MIN_NOTIONAL){
-    showToast('포지션 크기(증거금 × 레버리지)가 최소 ' + PT_MIN_NOTIONAL + ' USDT 이상이어야 해요.');
-    return;
-  }
+  if(notional < PT_MIN_NOTIONAL) return fail('포지션 크기(증거금 × 레버리지)가 최소 ' + PT_MIN_NOTIONAL + ' USDT 이상이어야 해요.');
   const feeRate = isLimit ? PT_MAKER_FEE : PT_FEE_RATE;
   const fee = notional * feeRate;
-  if(margin + fee > acc.balance + 1e-9){
-    showToast('사용 가능한 잔고가 부족해요. (필요: ' + ptMoney(margin + fee) + ' USDT, 증거금 + 수수료)');
-    return;
-  }
+  if(margin + fee > acc.balance + 1e-9) return fail('사용 가능한 잔고가 부족해요. (필요: ' + ptMoney(margin + fee) + ' USDT, 증거금 + 수수료)');
   const sideName = side === 'long' ? '롱' : '숏';
-  if(acc.position && acc.position.side !== side){
-    showToast('이미 ' + (acc.position.side === 'long' ? '롱' : '숏') + ' 포지션이 있어요. 반대 방향으로 진입하려면 먼저 청산해주세요.');
-    return;
-  }
-  if(ptOrdersOf(acc).length && acc.orders[0].side !== side){
-    showToast('반대 방향 미체결 주문이 있어요. 먼저 취소해주세요.');
-    return;
-  }
+  const conflict = ptSideConflictMsg(acc, side);
+  if(conflict) return fail(conflict);
   let ref = price;
   if(isLimit){
-    const limit = ptReadNumber('pt-limit-input');
-    if(!limit){ showToast('지정가를 입력해주세요.'); return; }
-    if(side === 'long' && limit >= price){ showToast('매수 지정가는 현재가(' + formatPrice(price) + ')보다 낮게 설정해주세요. 바로 사려면 시장가를 이용해주세요.'); return; }
-    if(side === 'short' && limit <= price){ showToast('매도 지정가는 현재가(' + formatPrice(price) + ')보다 높게 설정해주세요. 바로 팔려면 시장가를 이용해주세요.'); return; }
+    const limit = p.limit;
+    if(!limit) return fail('지정가를 입력해주세요.');
+    if(side === 'long' && limit >= price) return fail('매수 지정가는 현재가(' + formatPrice(price) + ')보다 낮게 설정해주세요. 바로 사려면 시장가를 이용해주세요.');
+    if(side === 'short' && limit <= price) return fail('매도 지정가는 현재가(' + formatPrice(price) + ')보다 높게 설정해주세요. 바로 팔려면 시장가를 이용해주세요.');
     ref = limit;
   }
-  const tp = ptReadNumber('pt-order-tp');
-  const sl = ptReadNumber('pt-order-sl');
+  const tp = p.tp || null;
+  const sl = p.sl || null;
   const merged = ptMergedPosition(acc.position, side, ref, margin, lev);
-  const mergedLiq = ptPosLiq(merged);
+  const mergedLiq = ptPosLiq(merged, acc, margin + fee);   // 교차에서는 이 주문이 가져갈 증거금·수수료만큼 잔고(버팀목)가 줄어듦
   const tpslMsg = ptValidateTpSl(side, ref, tp, sl, mergedLiq);
-  if(tpslMsg){ showToast(tpslMsg); return; }
+  if(tpslMsg) return fail(tpslMsg);
   // 분할 진입: 이 주문까지(그리고 이미 걸려 있는 지정가가 전부 체결되면) 평균 진입가·청산가가 바뀜
   // → 그때도 손절가가 청산가보다 안쪽인지 확인 (아니면 손절이 작동하지 않고 청산이 먼저 됨)
   const plan = ptSimulatePlan(acc, { kind:(isLimit ? 'limit' : 'market'), side:side, price:ref, margin:margin, leverage:lev, tp:tp, sl:sl });
   if(plan && plan.sl && !ptSlIsEffective(side, plan.sl, plan.liq)){
-    showToast('이 주문까지 반영하면 평균 진입가가 바뀌어 청산가가 ' + formatPrice(plan.liq) + '이(가) 돼요. 손절가(' + formatPrice(plan.sl) + ')가 청산가보다 멀어져서 작동하지 않아요. 손절가를 새로 입력하거나 기존 손절가를 먼저 조정해주세요.');
-    return;
+    return fail('이 주문까지 반영하면 평균 진입가가 바뀌어 청산가가 ' + ptLiqText(plan.liq) + '이(가) 돼요. 손절가(' + formatPrice(plan.sl) + ')가 청산가보다 멀어져서 작동하지 않아요. 손절가를 새로 입력하거나 기존 손절가를 먼저 조정해주세요.');
+  }
+  // 최종 상태뿐 아니라 '주문이 걸려 있는 동안'(교차: 잔고가 줄어든 상태)·체결 순서 단계마다 손절이 유효한지도 확인
+  const stepConflict = ptSlConflictAfterOrder(acc, { kind:(isLimit ? 'limit' : 'market'), side:side, price:ref, margin:margin, leverage:lev, fee:fee, tp:tp, sl:sl });
+  if(stepConflict && !ptSlConflictAhead(acc)){
+    return fail('이 주문을 넣으면 ' + (ptMode(acc) === 'cross' ? '사용 가능 잔고가 줄고 ' : '') + '청산가가 ' + ptLiqText(stepConflict.liq) + '이(가) 되는 단계가 생겨요' +
+      (stepConflict.orderPrice ? ' (지정가 ' + formatPrice(stepConflict.orderPrice) + ' 체결 시점)' : '') + '. 손절가(' + formatPrice(stepConflict.sl) + ')가 청산가보다 멀어져서 작동하지 않아요. 손절가를 새로 입력하거나 주문 크기를 줄여주세요.');
   }
 
   if(isLimit){
-    acc.balance -= (margin + fee);
+    const prevBalance = acc.balance;
+    acc.balance -= (margin + fee);   // 청산가 바깥 판정은 이 주문의 증거금·수수료가 잔고에서 빠진 상태 기준 (교차)
+    let newOrder, ladderFlag;
+    try{
+      let oid = ptNewOrderId();
+      while(ptOrdersOf(acc).some(function(x){ return x.id === oid; })) oid = ptNewOrderId();   // 취소·체결을 id로 찾으므로 겹치면 안 됨
+      newOrder = { id:oid, side:side, price:ref, margin:margin, leverage:lev, fee:fee, reserved:margin + fee,
+        tp:tp || null, sl:sl || null, createdAt:Date.now() };
+      ladderFlag = ptLadderLiqFlags(acc, newOrder).indexOf(newOrder) >= 0;   // 추가하기 전 목록 기준으로 이 주문이 청산가 바깥인지
+    }catch(e){ acc.balance = prevBalance; throw e; }
+    if(p.dryRun){
+      acc.balance = prevBalance;   // 미리 보기만: 아무것도 바꾸지 않음
+      return { ok:true, kind:'limit', dry:true, info:{ notional:notional, qty:notional / ref, fee:fee, liq:mergedLiq, merged:!!acc.position,
+        beyond:ptLimitBeyondSl(acc, side, ref, null), ladderFlag:ladderFlag } };
+    }
     if(!Array.isArray(acc.orders)) acc.orders = [];
-    let oid = ptNewOrderId();
-    while(acc.orders.some(function(x){ return x.id === oid; })) oid = ptNewOrderId();   // 취소·체결을 id로 찾으므로 겹치면 안 됨
-    const newOrder = { id:oid, side:side, price:ref, margin:margin, leverage:lev, fee:fee, reserved:margin + fee,
-      tp:tp || null, sl:sl || null, createdAt:Date.now() };
-    const ladderFlag = ptLadderLiqFlags(acc, newOrder).indexOf(newOrder) >= 0;   // 추가하기 전 목록 기준으로 이 주문이 청산가 바깥인지
     acc.orders.push(newOrder);
     savePaperState();
     renderPaperTrading();
-    setPtBottomTab('orders');
+    if(p.fromPanel) setPtBottomTab('orders');
     const beyond = ptLimitBeyondSl(acc, side, ref, null);
-    showToast(sideName + ' 지정가 주문을 걸었어요. (' + formatPrice(ref) + ')' + (acc.orders.length > 1 ? ' · 미체결 ' + acc.orders.length + '건' : '') +
+    return { ok:true, kind:'limit', order:newOrder, info:{ notional:notional, qty:notional / ref, fee:fee, liq:mergedLiq, beyond:beyond, ladderFlag:ladderFlag },
+      msg:sideName + ' 지정가 주문을 걸었어요. (' + formatPrice(ref) + ')' + (acc.orders.length > 1 ? ' · 미체결 ' + acc.orders.length + '건' : '') +
       (beyond ? ' · 주의: 손절가(' + formatPrice(beyond) + ')보다 바깥이라 손절이 먼저 일어나요' : '') +
-      (ladderFlag ? ' · 주의: 앞선 체결로 생길 포지션의 청산가보다 바깥이라, 그 전에 청산되면 청산 뒤 새 포지션으로 체결돼요' : ''));
-    return;
+      (ladderFlag ? ' · 주의: 앞선 체결로 생길 포지션의 청산가보다 바깥이라, 그 전에 청산되면 청산 뒤 새 포지션으로 체결돼요' : '') };
   }
+  if(p.dryRun) return { ok:true, kind:'market', dry:true, info:{ notional:notional, qty:notional / ref, fee:fee, liq:mergedLiq, merged:!!acc.position } };
   acc.balance -= (margin + fee);
   ptAddOrMergePosition(acc, side, price, margin, lev, fee, tp, sl);
-  ptEl('pt-margin-input').value = '';
-  ptEl('pt-order-tp').value = '';
-  ptEl('pt-order-sl').value = '';
-  ptTpslDirty = false;
+  if(p.fromPanel){
+    ptEl('pt-margin-input').value = '';
+    ptEl('pt-order-tp').value = '';
+    ptEl('pt-order-sl').value = '';
+    ptTpslDirty = false;
+  }
   savePaperState();
   renderPaperTrading();
-  setPtBottomTab('position');
-  showToast(sideName + ' 포지션을 열었어요. (' + formatPrice(price) + ' · ' + ptLev(acc.position.leverage) + ')');
+  if(p.fromPanel) setPtBottomTab('position');
+  return { ok:true, kind:'market', msg:sideName + ' 포지션을 열었어요. (' + formatPrice(price) + ' · ' + ptLev(acc.position.leverage) + ')' };
+}
+function openPtPosition(side){
+  const isLimit = ptOrderType === 'limit';
+  const r = ptSubmitOrder({ side:side, isLimit:isLimit, margin:ptReadNumber('pt-margin-input'), limit:isLimit ? ptReadNumber('pt-limit-input') : null,
+    tp:ptReadNumber('pt-order-tp'), sl:ptReadNumber('pt-order-sl'), fromPanel:true });
+  if(r.msg) showToast(r.msg);
 }
 function cancelPtOrder(id){
   const acc = getCurrentPaperAccount();
@@ -4735,13 +5455,13 @@ function applyPtTpSl(){
   const tp = tpRaw === '' ? null : parseFloat(tpRaw);
   const sl = slRaw === '' ? null : parseFloat(slRaw);
   if((tp !== null && !(tp > 0)) || (sl !== null && !(sl > 0))){ showToast('익절가와 손절가는 0보다 큰 숫자로 입력해주세요.'); return; }
-  const msg = ptValidateTpSl(pos.side, price, tp, sl, ptPosLiq(pos));
+  const msg = ptValidateTpSl(pos.side, price, tp, sl, ptPosLiq(pos, acc));
   if(msg){ showToast(msg); return; }
   // 걸려 있는 지정가가 체결돼 평균 진입가가 바뀌면 청산가가 올라와 이 손절가가 작동하지 않게 되는 경우도 막음
   if(sl !== null){
-    const c = ptSlConflictAhead({ position:Object.assign({}, pos, { tp:tp, sl:sl }), orders:ptOrdersOf(acc) });
+    const c = ptSlConflictAhead(Object.assign({}, acc, { position:Object.assign({}, pos, { tp:tp, sl:sl }) }));
     if(c && c.sl === sl){
-      showToast('미체결 지정가' + (c.orderPrice ? '(' + formatPrice(c.orderPrice) + ')' : '') + '가 체결되면 청산가가 ' + formatPrice(c.liq) + '이(가) 돼서 이 손절가(' + formatPrice(sl) + ')가 작동하지 않아요. 손절가를 안쪽으로 정하거나 해당 주문을 취소해주세요.');
+      showToast('미체결 지정가' + (c.orderPrice ? '(' + formatPrice(c.orderPrice) + ')' : '') + '가 체결되면 청산가가 ' + ptLiqText(c.liq) + '이(가) 돼서 이 손절가(' + formatPrice(sl) + ')가 작동하지 않아요. 손절가를 안쪽으로 정하거나 해당 주문을 취소해주세요.');
       return;
     }
   }
@@ -4771,7 +5491,7 @@ function ptPlanPosAtOrder(acc, target){
 function ptValidateOrderTpSl(acc, targets, tp, sl){
   for(let i = 0; i < targets.length; i++){
     const t = targets[i];
-    const msg = ptValidateTpSl(t.side, t.price, tp, sl, ptPosLiq(ptPlanPosAtOrder(acc, t)));
+    const msg = ptValidateTpSl(t.side, t.price, tp, sl, ptPosLiq(ptPlanPosAtOrder(acc, t), acc));
     if(msg) return (targets.length > 1 ? '[' + formatPrice(t.price) + ' 주문] ' : '') + msg;
   }
   return null;
@@ -4858,13 +5578,154 @@ function clearPtOrderTpSlAll(){
   showToast('미체결 주문 ' + orders.length + '건의 익절·손절 설정을 모두 해제했어요.');
 }
 
+// ---------- 미체결 주문 가격 옮기기 (차트에서 선을 끌어서 수정) ----------
+// 주문 o의 가격을 newPrice로 바꿔도 되는지 확인만 함 (실제로 바꾸지 않음). 결과: { ok, msg, warn, price }
+// 주문 가격이 바뀌면 체결 순서와 합산 평균 진입가·청산가가 달라지므로, 새 주문을 걸 때와 같은 기준으로 전체 주문을 다시 검사함
+function ptCheckOrderMove(acc, o, newPrice, curPrice){
+  const price = Math.round(newPrice * 100) / 100;
+  if(!(price > 0) || !isFinite(price)) return { ok:false, msg:'가격을 올바르게 입력해주세요.' };
+  if(o.side === 'long' && price >= curPrice) return { ok:false, msg:'매수 지정가는 현재가(' + formatPrice(curPrice) + ')보다 낮은 곳으로만 옮길 수 있어요. 바로 사려면 시장가를 이용해주세요.' };
+  if(o.side === 'short' && price <= curPrice) return { ok:false, msg:'매도 지정가는 현재가(' + formatPrice(curPrice) + ')보다 높은 곳으로만 옮길 수 있어요. 바로 팔려면 시장가를 이용해주세요.' };
+  const trial = Object.assign({}, acc, { orders:ptOrdersOf(acc).map(function(x){ return x === o ? Object.assign({}, x, { price:price }) : x; }) });
+  const moved = trial.orders.find(function(x){ return x.id === o.id; });
+  const wasBad = {};   // 옮기기 전부터 이미 안 맞던 다른 주문(예전 데이터 등)은 이 이동의 책임이 아니므로 막지 않음
+  ptOrdersOf(acc).forEach(function(x){ if((x.tp || x.sl) && ptValidateOrderTpSl(acc, [x], x.tp, x.sl)) wasBad[x.id] = true; });
+  for(let i = 0; i < trial.orders.length; i++){
+    const x = trial.orders[i];
+    if(!x.tp && !x.sl) continue;
+    if(x !== moved && wasBad[x.id]) continue;
+    const msg = ptValidateOrderTpSl(trial, [x], x.tp, x.sl);
+    if(msg) return { ok:false, msg:(x === moved ? '이 주문' : formatPrice(x.price) + ' 주문') + '의 익절·손절과 맞지 않아서 옮길 수 없어요. ' + msg };
+  }
+  const before = ptSlConflictAhead(acc), after = ptSlConflictAhead(trial);
+  if(after && !before){
+    return { ok:false, msg:'이 가격으로 옮기면 평균 진입가가 바뀌어 청산가가 ' + ptLiqText(after.liq) + '이(가) 돼요. 손절가(' + formatPrice(after.sl) + ')가 청산가보다 멀어져서 작동하지 않아요.' };
+  }
+  let warn = '';
+  const beyond = ptLimitBeyondSl(trial, o.side, price, null);
+  if(beyond) warn += ' · 주의: 손절가(' + formatPrice(beyond) + ')보다 바깥이라 손절이 먼저 일어나요';
+  const flagsBefore = ptLadderLiqFlags(acc).map(function(x){ return x.id; });
+  if(ptLadderLiqFlags(trial).some(function(x){ return flagsBefore.indexOf(x.id) < 0; })){
+    warn += ' · 주의: 앞선 체결로 생길 포지션의 청산가보다 바깥에 걸린 주문이 생겨요. 그 전에 청산되면 청산 뒤 새 포지션으로 체결돼요';
+  }
+  if(moved.tp) warn += ptTpLossNote(trial, [moved], moved.tp);
+  return { ok:true, price:price, warn:warn };
+}
+// 지정가 주문 가격 변경 (차트 드래그의 확정 단계). 증거금·수수료는 가격과 무관해서 잔고는 그대로이고, 수량은 체결될 때 정해짐
+function movePtOrderPrice(id, newPrice){
+  const acc = getCurrentPaperAccount();
+  const o = ptOrdersOf(acc).find(function(x){ return x.id === id; });
+  if(!o){ showToast('이미 체결됐거나 취소된 주문이라 옮길 수 없어요.'); return { ok:false, msg:'gone' }; }
+  const stale = ptPriceStaleMsg();
+  if(stale){ showToast(stale); return { ok:false, msg:stale }; }
+  const r = ptCheckOrderMove(acc, o, newPrice, ptBtc.price);
+  if(!r.ok){ showToast(r.msg + ' (원래 가격 ' + formatPrice(o.price) + ' 그대로예요)'); return r; }
+  if(Math.abs(r.price - o.price) < 1e-9) return { ok:true, same:true, price:o.price };
+  const old = o.price;
+  o.price = r.price;
+  savePaperState();
+  renderPaperTrading();
+  showToast((o.side === 'long' ? '지정 매수' : '지정 매도') + ' 주문 가격을 ' + formatPrice(old) + ' → ' + formatPrice(r.price) + '(으)로 바꿨어요. 예약된 금액은 그대로예요.' + r.warn);
+  return { ok:true, price:r.price, old:old, warn:r.warn };
+}
+
+// ---------- 지정가 주문선을 현재가 건너편으로 끌어서 시장가로 체결 ----------
+// 롱 지정가를 현재가 위로(숏 지정가는 아래로) 끌어다 놓으면, 그 주문을 지금 시세로 바로 체결한다(시장가).
+// 예약해 둔 증거금·지정가 수수료(0.02%)는 돌려받고, 같은 증거금으로 시장가 수수료(0.06%)를 내고 진입한다.
+// 증거금이 기준이라 수량은 증거금 × 레버리지 ÷ 현재가로 다시 정해진다. 포지션이 있으면 평균 진입가로 합쳐지고, 주문의 익절·손절은 포지션에 적용된다.
+function ptIsMarketDrop(o, price, cur){
+  return o.side === 'long' ? price >= cur : price <= cur;
+}
+function ptMarketFillFee(o){
+  return o.margin * o.leverage * PT_FEE_RATE;
+}
+// 체결해도 되는지 확인만 함 (아무것도 바꾸지 않음). 결과: { ok:false, msg } | { ok:true, fee, extraFee, qty, entry, liq, merged, warn }
+function ptCheckOrderMarketFill(acc, o, cur){
+  if(!(cur > 0) || !isFinite(cur)) return { ok:false, msg:'현재 시세를 아직 받아오지 못했어요.' };
+  if(acc.position && acc.position.side !== o.side) return { ok:false, msg:'이미 ' + (acc.position.side === 'long' ? '롱' : '숏') + ' 포지션이 있어서 반대 방향 주문은 시장가로 체결할 수 없어요. (예전 데이터 등으로 방향이 섞인 경우예요)' };
+  const fee = ptMarketFillFee(o);
+  const need = o.margin + fee;
+  const avail = acc.balance + (o.reserved || 0);   // 이 주문에 묶여 있던 금액은 돌려받은 뒤 다시 씀
+  if(need > avail + 1e-9){
+    return { ok:false, msg:'시장가로 체결하려면 증거금과 시장가 수수료 ' + ptMoney(need) + ' USDT가 필요한데, 쓸 수 있는 금액이 ' + ptMoney(avail) + ' USDT예요. (시장가 수수료 0.06%는 지정가 0.02%보다 높아요)' };
+  }
+  const others = ptOrdersOf(acc).filter(function(x){ return x !== o; });
+  const merged = ptMergedPosition(acc.position, o.side, cur, o.margin, o.leverage);
+  const trial = Object.assign({}, acc, { balance:avail - need, orders:others,
+    position:{ side:o.side, entry:merged.entry, qty:merged.qty, margin:merged.margin, leverage:merged.leverage,
+      tp:o.tp || (acc.position ? acc.position.tp : null), sl:o.sl || (acc.position ? acc.position.sl : null) } });
+  const liq = ptPosLiq(trial.position, trial);
+  const tpslMsg = ptValidateTpSl(o.side, cur, o.tp, o.sl, liq);
+  if(tpslMsg) return { ok:false, msg:'이 주문의 익절·손절이 현재가(' + formatPrice(cur) + ')에 체결하는 기준으로는 맞지 않아요. ' + tpslMsg };
+  // 합쳐진 포지션과 남은 지정가들 사이에서 손절이 청산가 밖으로 밀려나는지 (이미 그랬던 경우는 이 체결의 책임이 아니므로 막지 않음)
+  const before = ptSlConflictAhead(acc), after = ptSlConflictAhead(trial);
+  if(after && !before){
+    return { ok:false, msg:'지금 체결하면 평균 진입가가 바뀌어 청산가가 ' + ptLiqText(after.liq) + '이(가) 돼요. 손절가(' + formatPrice(after.sl) + ')가 청산가보다 멀어져서 작동하지 않아요.' };
+  }
+  const wasBad = {};
+  others.forEach(function(x){ if((x.tp || x.sl) && ptValidateOrderTpSl(acc, [x], x.tp, x.sl)) wasBad[x.id] = true; });
+  for(let i = 0; i < others.length; i++){
+    const x = others[i];
+    if((!x.tp && !x.sl) || wasBad[x.id]) continue;
+    const msg = ptValidateOrderTpSl(trial, [x], x.tp, x.sl);
+    if(msg) return { ok:false, msg:formatPrice(x.price) + ' 주문의 익절·손절과 맞지 않아서 체결할 수 없어요. ' + msg };
+  }
+  let warn = '';
+  const flagsBefore = ptLadderLiqFlags(acc).map(function(x){ return x.id; });
+  if(ptLadderLiqFlags(trial).some(function(x){ return flagsBefore.indexOf(x.id) < 0; })){
+    warn += ' · 주의: 남은 지정가 중 합쳐진 포지션의 청산가보다 바깥에 걸린 주문이 생겨요. 그 전에 청산되면 청산 뒤 새 포지션으로 체결돼요';
+  }
+  const beyond = ptLimitBeyondSl(trial, o.side, cur, null);
+  if(beyond) warn += ' · 주의: 손절가(' + formatPrice(beyond) + ')보다 바깥에 남은 지정가가 있어요';
+  const tpAfter = trial.position.tp;   // 합쳐진 뒤 포지션의 익절가가 평균 진입가보다 불리하면 익절돼도 손실
+  if(tpAfter && (o.side === 'long' ? tpAfter <= merged.entry : tpAfter >= merged.entry)){
+    warn += ' · 주의: 익절가(' + formatPrice(tpAfter) + ')가 합쳐진 평균 진입가(' + formatPrice(merged.entry) + ')보다 불리해서 익절돼도 손실이에요';
+  }
+  return { ok:true, fee:fee, extraFee:fee - (o.fee || 0), qty:o.margin * o.leverage / cur, entry:merged.entry, liq:liq, merged:!!acc.position, warn:warn };
+}
+// 실제 체결 계산 (화면과 무관). 호출 전에 ptCheckOrderMarketFill 로 확인해야 함
+function ptApplyOrderMarketFill(acc, o, cur){
+  const fee = ptMarketFillFee(o);
+  acc.orders = ptOrdersOf(acc).filter(function(x){ return x !== o; });
+  acc.balance = acc.balance + (o.reserved || 0) - (o.margin + fee);
+  ptAddOrMergePosition(acc, o.side, cur, o.margin, o.leverage, fee, o.tp, o.sl);
+  return { fee:fee, price:cur };
+}
+function fillPtOrderAtMarket(id){
+  const acc = getCurrentPaperAccount();
+  const o = ptOrdersOf(acc).find(function(x){ return x.id === id; });
+  if(!o){ showToast('이미 체결됐거나 취소된 주문이라 시장가로 체결할 수 없어요.'); return { ok:false, msg:'gone' }; }
+  const stale = ptPriceStaleMsg();
+  if(stale){ showToast(stale + ' (주문은 그대로 ' + formatPrice(o.price) + '에 남아 있어요)'); return { ok:false, msg:stale }; }
+  const cur = ptBtc.price;
+  // 직전 틱 이후 손절·청산·지정가 체결 조건에 걸렸는지 먼저 확인 (오래된 상태 위에 체결하지 않도록)
+  const notes = processPtTriggers(cur);
+  if(notes.length){
+    savePaperState();
+    renderPaperTrading();
+    showToast(notes[0]);
+    return { ok:false, msg:notes[0], triggered:true };
+  }
+  const chk = ptCheckOrderMarketFill(acc, o, cur);
+  if(!chk.ok){ showToast(chk.msg + ' (주문은 그대로 ' + formatPrice(o.price) + '에 남아 있어요)'); return chk; }
+  const side = o.side, limitPrice = o.price, oldFee = o.fee || 0;
+  ptApplyOrderMarketFill(acc, o, cur);
+  delete ptOrdTpslDirty[o.id];
+  savePaperState();
+  renderPaperTrading();
+  showToast((side === 'long' ? '롱' : '숏') + ' 지정가 주문(' + formatPrice(limitPrice) + ')을 시장가로 체결했어요. (' + formatPrice(cur) + ' · ' + ptLev(acc.position.leverage) + ' · 수수료 ' +
+    ptMoney(chk.fee) + ' USDT, 지정가였다면 ' + ptMoney(oldFee) + ')' + chk.warn);
+  return { ok:true, price:cur, fee:chk.fee, warn:chk.warn };
+}
+
 // ---------- 화면 그리기 ----------
 function setPtBottomTab(tab){
-  ptBottomTab = (tab === 'orders' || tab === 'history') ? tab : 'position';
-  ['position', 'orders', 'history'].forEach(function(t){
+  ptBottomTab = (tab === 'orders' || tab === 'history' || tab === 'stats') ? tab : 'position';
+  ['position', 'orders', 'history', 'stats'].forEach(function(t){
     ptEl('pt-btab-' + t).classList.toggle('active', t === ptBottomTab);
     ptEl('pt-' + t + '-body').style.display = (t === ptBottomTab) ? 'block' : 'none';
   });
+  if(ptBottomTab === 'stats') renderPtStats();
 }
 function renderPtAccountTabs(){
   const wrap = ptEl('pt-account-tabs');
@@ -4895,7 +5756,7 @@ function renderPtAccountSummary(){
   let statText = '-';
   if(st.total) statText = st.total + '회 · ' + Math.round(st.wins / st.total * 100) + '%' + (st.partialRows ? ' <span class="pt-summary-sub">(분할 청산 ' + st.partialRows + '건 합산)</span>' : '');
   else if(st.openPartialRows) statText = '<span class="pt-summary-sub">진행 중 · 분할 청산 ' + st.openPartialRows + '건</span>';
-  const cum = acc.history.reduce(function(sum, h){ return sum + h.net; }, 0);
+  const cum = acc.history.reduce(function(sum, h){ return sum + h.net; }, 0) + (acc.trimmed ? acc.trimmed.net : 0);   // 한도를 넘어 지워진 오래된 기록의 손익도 포함
   function item(label, valueHtml){
     return '<div class="pt-summary-item"><span class="pt-summary-label">' + label + '</span><span class="pt-summary-value">' + valueHtml + '</span></div>';
   }
@@ -4911,7 +5772,19 @@ function renderPtAccountSummary(){
 }
 function renderPtLeverage(){
   const acc = getCurrentPaperAccount();
+  ptSettleAutoMode(acc);
   const locked = ptLeverageLocked(acc);
+  const mode = ptMode(acc);
+  ptEl('pt-leverage-label').textContent = '레버리지 (' + ptModeLabel(acc) + ')';
+  ['cross', 'isolated'].forEach(function(m){
+    const b = ptEl('pt-mode-' + m);
+    b.classList.toggle('active', m === mode);
+    b.disabled = locked;
+    b.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+  });
+  ptEl('pt-mode-desc').textContent = mode === 'cross'
+    ? '교차: 증거금에 사용 가능 잔고까지 더해 버텨서 청산가가 멀지만, 청산되면 계좌 잔고를 모두 잃어요.'
+    : '격리: 이 포지션에 넣은 증거금만 잃어요. 대신 청산가가 더 가까워요.';
   ptEl('pt-leverage-display').textContent = acc.leverage + 'x';
   const slider = ptEl('pt-leverage-slider');
   slider.value = acc.leverage;
@@ -4919,11 +5792,17 @@ function renderPtLeverage(){
   ptEl('pt-leverage-presets').innerHTML = PT_LEVERAGE_PRESETS.map(function(l){
     return '<button type="button" class="pt-leverage-btn' + (l === acc.leverage ? ' active' : '') + '"' + (locked ? ' disabled' : '') + ' onclick="setPtLeverage(' + l + ')">' + l + 'x</button>';
   }).join('');
-  ptEl('pt-leverage-lock').style.display = locked ? 'block' : 'none';
+  const lockEl = ptEl('pt-leverage-lock');
+  lockEl.style.display = locked ? 'block' : 'none';
+  lockEl.textContent = acc.modeAuto
+    ? '포지션이나 미체결 주문이 있는 동안에는 레버리지와 마진 모드를 바꿀 수 없어요. 이 거래는 예전 방식(격리)으로 시작돼서, 모두 정리되면 교차로 바뀌어요.'
+    : '포지션이나 미체결 주문이 있는 동안에는 레버리지와 마진 모드를 바꿀 수 없어요.';
 }
 function renderPtOrderPreviewFromInput(){
+  renderPtLimitOffset();
   ptUpdateChartPreviewLines();
   renderPtMarginSlider();
+  renderPtRiskCalc();
   const wrap = ptEl('pt-order-preview');
   if(!wrap) return;
   const acc = getCurrentPaperAccount();
@@ -4944,14 +5823,18 @@ function renderPtOrderPreviewFromInput(){
   const qty = notional / ref;
   const feeRate = ptEntryFeeRate();
   const fee = notional * feeRate;
-  const longLiq = ptPosLiq(ptMergedPosition(acc.position, 'long', ref, margin, lev));
-  const shortLiq = ptPosLiq(ptMergedPosition(acc.position, 'short', ref, margin, lev));
-  let liqHtml;
+  const need = margin + fee;   // 이 주문이 잔고에서 가져갈 금액 (교차 청산가의 버팀목 계산에 반영)
+  const longLiq = ptPosLiq(ptMergedPosition(acc.position, 'long', ref, margin, lev), acc, need);
+  const shortLiq = ptPosLiq(ptMergedPosition(acc.position, 'short', ref, margin, lev), acc, need);
+  const cross = ptMode(acc) === 'cross';
+  let liqHtml, maxLossHtml;
   if(acc.position){
     const m = ptMergedPosition(acc.position, acc.position.side, ref, margin, lev);
-    liqHtml = formatPrice(ptPosLiq(m)) + ' <span style="font-weight:500;color:var(--ink-dim);">(합산 후)</span>';
+    liqHtml = ptLiqText(ptPosLiq(m, acc, need)) + ' <span style="font-weight:500;color:var(--ink-dim);">(합산 후)</span>';
+    maxLossHtml = cross ? ptMoney(ptLiqBuffer(acc, m, need)) + ' USDT (계좌 잔고 전액)' : ptMoney(m.margin) + ' USDT (증거금 전액)';
   }else{
-    liqHtml = '롱 ' + formatPrice(longLiq) + '<br>숏 ' + formatPrice(shortLiq);
+    liqHtml = '롱 ' + ptLiqText(longLiq) + '<br>숏 ' + ptLiqText(shortLiq);
+    maxLossHtml = cross ? ptMoney(ptLiqBuffer(acc, { margin:margin }, need)) + ' USDT (계좌 잔고 전액)' : ptMoney(margin) + ' USDT (증거금 전액)';
   }
   const row = function(l, v){ return '<div class="pt-preview-row"><span>' + l + '</span><span>' + v + '</span></div>'; };
   let html =
@@ -4959,7 +5842,7 @@ function renderPtOrderPreviewFromInput(){
     row('수량', ptQty(qty) + ' BTC') +
     row('진입 수수료 (' + (feeRate * 100).toFixed(2) + '%)', ptMoney(fee) + ' USDT') +
     row('예상 청산가', liqHtml) +
-    row('청산 시 최대 손실', ptMoney(margin) + ' USDT (증거금 전액)');
+    row('청산 시 최대 손실', maxLossHtml);
   const tp = ptReadNumber('pt-order-tp');
   const sl = ptReadNumber('pt-order-sl');
   let side = ptInferSide(ref, tp, sl);
@@ -4970,15 +5853,15 @@ function renderPtOrderPreviewFromInput(){
   }else if(side){
     const base = (acc.position && acc.position.side === side) ? acc.position : null;
     const m = ptMergedPosition(base, side, ref, margin, lev);
-    const warn = ptValidateTpSl(side, ref, tp, sl, ptPosLiq(m));
+    const warn = ptValidateTpSl(side, ref, tp, sl, ptPosLiq(m, acc, need));
     const sideName = side === 'long' ? '롱' : '숏';
     if(warn){
       html += '<div class="pt-preview-warn">' + escapeHtml(warn) + '</div>';
     }else{
       const effTp = tp || (base ? base.tp : null);
       const effSl = sl || (base ? base.sl : null);
-      if(effSl && !ptSlIsEffective(side, effSl, ptPosLiq(m))){
-        html += '<div class="pt-preview-warn">합산하면 청산가(' + formatPrice(ptPosLiq(m)) + ')가 기존 손절가(' + formatPrice(effSl) + ')보다 안쪽이 돼요. 손절가를 다시 입력해주세요.</div>';
+      if(effSl && !ptSlIsEffective(side, effSl, ptPosLiq(m, acc, need))){
+        html += '<div class="pt-preview-warn">합산하면 청산가(' + ptLiqText(ptPosLiq(m, acc, need)) + ')가 기존 손절가(' + formatPrice(effSl) + ')보다 안쪽이 돼요. 손절가를 다시 입력해주세요.</div>';
       }else if(effSl || effTp){
         const equity = ptAccountEquity(acc, price);
         const upnlNow = base ? calcPtPnl(base.side, base.entry, price, base.qty) : 0;
@@ -5025,7 +5908,9 @@ function renderPtOrderPreviewFromInput(){
     html += '<div class="pt-preview-warn">사용 가능한 잔고(' + ptMoney(acc.balance) + ' USDT)보다 커요.</div>';
   }
   if(lev >= 50){
-    html += '<div class="pt-preview-warn">레버리지 ' + lev + 'x에서는 ' + (100 / lev).toFixed(2) + '% 안팎의 가격 변동만으로도 청산될 수 있어요.</div>';
+    html += cross
+      ? '<div class="pt-preview-warn">레버리지 ' + lev + 'x에서는 가격이 ' + (100 / lev).toFixed(2) + '%만 움직여도 넣은 증거금만큼 손익이 나요. 교차 마진은 청산가가 멀어 보여도, 청산되면 계좌 잔고를 모두 잃어요.</div>'
+      : '<div class="pt-preview-warn">레버리지 ' + lev + 'x에서는 ' + (100 / lev).toFixed(2) + '% 안팎의 가격 변동만으로도 청산될 수 있어요.</div>';
   }
   wrap.innerHTML = html;
 }
@@ -5046,7 +5931,7 @@ function renderPtPosition(){
   const keep = (ptTpslDirty && oldTp && oldSl) ? { tp:oldTp.value, sl:oldSl.value } : null;
   const isLong = pos.side === 'long';
   const notional = pos.qty * pos.entry;
-  const liq = ptPosLiq(pos);
+  const liq = ptPosLiq(pos, acc);
   const cell = function(label, html, big){
     return '<div class="pt-pos-cell"><div class="pt-pos-label">' + label + '</div><div class="pt-pos-value' + (big ? ' big' : '') + '">' + html + '</div></div>';
   };
@@ -5054,7 +5939,7 @@ function renderPtPosition(){
     '<div class="pt-position-head">' +
       '<span class="tag ' + (isLong ? 'dir-up' : 'dir-down') + '">' + (isLong ? '롱' : '숏') + '</span>' +
       '<b>BTC/USDT</b>' +
-      '<span class="pt-position-lev">' + ptLev(pos.leverage) + ' · 격리' + (pos.entries > 1 ? ' · 분할 진입 ' + pos.entries + '회' : '') + '</span>' +
+      '<span class="pt-position-lev">' + ptLev(pos.leverage) + ' · ' + ptModeLabel(acc) + (pos.entries > 1 ? ' · 분할 진입 ' + pos.entries + '회' : '') + '</span>' +
     '</div>' +
     '<div class="pt-pos-grid">' +
       cell('미실현 손익 (USDT)', '<span id="pt-pos-pnl">-</span>', true) +
@@ -5063,7 +5948,7 @@ function renderPtPosition(){
       cell('수량', ptQty(pos.qty) + ' BTC') +
       cell(pos.entries > 1 ? '평균 진입가' : '진입가', formatPrice(pos.entry)) +
       cell('현재가', '<span id="pt-pos-mark">-</span>') +
-      cell('청산가', formatPrice(liq)) +
+      cell('청산가', ptLiqText(liq)) +
       cell('청산까지 거리', '<span id="pt-pos-liqdist">-</span>') +
       cell('증거금', ptMoney(pos.margin) + ' USDT') +
       cell('진입 수수료', ptMoney(pos.feePaid) + ' USDT') +
@@ -5129,6 +6014,7 @@ function renderPtOrders(){
 
   let html = '<div class="pt-orders-head"><span class="pt-list-sub">미체결 ' + orders.length + '건 · 예약된 금액 ' + ptMoney(ptReservedTotal(acc)) + ' USDT</span>' +
     (orders.length > 1 ? '<button type="button" class="pt-cancel-all" onclick="cancelAllPtOrders()">전체 취소</button>' : '') + '</div>';
+  html += '<div class="pt-pos-note" style="margin-top:0;">차트에 보이는 지정가 선을 마우스로 잡아 위아래로 끌면 가격을 바꿀 수 있어요. (모바일은 손가락으로 끌기, Esc로 취소) 예약된 금액은 그대로예요. 매수(롱) 선을 현재가 위로, 매도(숏) 선을 현재가 아래로 끌어다 놓으면 시장가로 바로 체결돼요(선이 연두색으로 바뀌어 미리 알려줘요).</div>';
   if(orders.length > 1){
     html += '<div class="pt-ord-bulk">' +
       '<div class="pt-pos-actions-title">모든 미체결 주문에 한꺼번에 익절 / 손절 적용 (비워 둔 칸은 그대로 둠)</div>' +
@@ -5171,7 +6057,7 @@ function renderPtOrders(){
       row('총 수량', ptQty(plan.pos.qty) + ' BTC') +
       row('총 포지션 크기', ptMoney(plan.pos.qty * plan.pos.entry) + ' USDT') +
       row('총 증거금', ptMoney(plan.pos.margin) + ' USDT') +
-      row('예상 청산가', formatPrice(plan.liq)) +
+      row('예상 청산가', ptLiqText(plan.liq)) +
       row('익절가 · 손절가', (plan.tp ? formatPrice(plan.tp) : '-') + ' · ' + (plan.sl ? formatPrice(plan.sl) : '-'));
     if(plan.sl && !ptSlIsEffective(side, plan.sl, plan.liq)){
       html += '<div class="pt-preview-warn">손절가(' + formatPrice(plan.sl) + ')가 청산가보다 멀어 작동하지 않아요. 주문을 조정해주세요.</div>';
@@ -5204,26 +6090,360 @@ function renderPtOrders(){
     }
   }
 }
-function renderPtHistory(){
+// ---------- 거래 내역 · 복기(태그·메모) · CSV ----------
+let ptHistoryShown = 50;
+let ptNoteDraft = null;     // 복기 작성 중인 내용 { accId, rowId, tags:[], memo:'', custom:'' } — 화면이 다시 그려져도 유지
+let ptHistorySig = '';
+function ptAttr(s){ return escapeHtml(String(s)).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+// 이 계좌에서 이미 쓴 직접 입력 태그(많이 쓴 순, 최대 8개) — 다음에 한 번에 고를 수 있게
+function ptKnownTags(acc){
+  const cnt = Object.create(null);
+  acc.history.forEach(function(h){ ptCleanTags(h.tags).forEach(function(t){ cnt[t] = (cnt[t] || 0) + 1; }); });
+  return Object.keys(cnt).filter(function(t){ return PT_NOTE_PRESET_TAGS.indexOf(t) < 0; })
+    .sort(function(a, b){ return cnt[b] - cnt[a] || (a < b ? -1 : 1); }).slice(0, 8);
+}
+function ptNoteIsDirty(){
+  const d = ptNoteDraft;
+  if(!d) return false;
+  const acc = paperAccounts.find(function(a){ return a.id === d.accId; });
+  const h = acc ? acc.history.find(function(x){ return x.id === d.rowId; }) : null;
+  if(!h) return false;
+  return JSON.stringify(ptCleanTags(h.tags)) !== JSON.stringify(ptCleanTags(d.tags)) || ptCleanMemo(h.memo) !== ptCleanMemo(d.memo) || !!(d.custom && d.custom.trim());
+}
+function ptNoteEditorHtml(acc){
+  const d = ptNoteDraft;
+  const tagSet = PT_NOTE_PRESET_TAGS.concat(ptKnownTags(acc), d.tags).filter(function(t, i, arr){ return arr.indexOf(t) === i; });
+  const btns = tagSet.map(function(t){
+    const on = d.tags.indexOf(t) >= 0;
+    return '<button type="button" class="pt-tagbtn' + (on ? ' on' : '') + '" data-tag="' + ptAttr(t) + '" aria-pressed="' + on + '" onclick="ptToggleNoteTag(this)">' + escapeHtml(t) + '</button>';
+  }).join('');
+  return '<div class="pt-note-editor">' +
+    '<div class="pt-note-label">이 거래 복기 <span>(태그는 최대 ' + PT_TAG_MAX + '개)</span></div>' +
+    '<div class="pt-tagpicker">' + btns + '</div>' +
+    '<div class="pt-note-custom"><input type="text" id="pt-note-custom" maxlength="' + PT_TAG_LEN + '" placeholder="직접 태그 입력 (최대 ' + PT_TAG_LEN + '자)" value="' + ptAttr(d.custom || '') + '" oninput="ptNoteDraftSync()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();ptAddCustomTag();}">' +
+    '<button type="button" class="pt-mini-btn" onclick="ptAddCustomTag()">태그 추가</button></div>' +
+    '<textarea id="pt-note-memo" rows="3" maxlength="' + PT_MEMO_LEN + '" placeholder="왜 진입했고 계획대로 됐는지, 다음에 바꿀 점을 적어보세요" oninput="ptNoteDraftSync()">' + escapeHtml(d.memo || '') + '</textarea>' +
+    '<div class="pt-note-actions"><button type="button" class="pt-mini-btn pt-primary" onclick="ptSaveNote()">저장</button>' +
+    '<button type="button" class="pt-mini-btn" onclick="ptCancelNote()">취소</button>' +
+    '<span class="pt-note-count" id="pt-note-count">' + (d.memo || '').length + '/' + PT_MEMO_LEN + '</span></div>' +
+  '</div>';
+}
+function renderPtHistory(force){
   const body = ptEl('pt-history-body');
   if(!body) return;
   const acc = getCurrentPaperAccount();
   ptEl('pt-count-history').textContent = String(acc.history.length);
+  if(ptNoteDraft && !(ptNoteDraft.accId === acc.id || paperAccounts.some(function(a){ return a.id === ptNoteDraft.accId && a.history.some(function(x){ return x.id === ptNoteDraft.rowId; }); }))) ptNoteDraft = null;
   if(acc.history.length === 0){
+    ptHistorySig = '';
     body.innerHTML = '<div class="empty">아직 거래 내역이 없어요.<br>포지션을 청산하면 여기에 기록돼요.</div>';
     return;
   }
-  body.innerHTML = acc.history.slice(0, 50).map(function(h){
+  // 복기를 쓰는 중이고 내역이 그대로면 다시 그리지 않음(입력 중인 글·커서가 사라지지 않게)
+  const sig = acc.id + '|' + acc.history.length + '|' + acc.history[0].id + '|' + ptHistoryShown + '|' + (ptNoteDraft ? ptNoteDraft.rowId : '');
+  if(!force && ptNoteDraft && ptNoteDraft.accId === acc.id && sig === ptHistorySig && body.querySelector('.pt-note-editor')) return;
+  ptHistorySig = sig;
+  const shown = Math.min(acc.history.length, ptHistoryShown);
+  const trimmed = acc.trimmed && acc.trimmed.rows > 0;
+  let notice = '';
+  if(trimmed) notice = '오래된 기록 ' + acc.trimmed.rows + '건은 보관 한도(' + PT_HISTORY_LIMIT + '건)를 넘어 정리됐어요. 손익은 \'실현 손익 누계\'에 남아 있지만 통계·CSV에는 빠져요.';
+  else if(acc.history.length >= PT_HISTORY_LIMIT * 0.9) notice = '기록이 ' + acc.history.length + '건이에요. ' + PT_HISTORY_LIMIT + '건을 넘으면 오래된 기록부터 정리되니 CSV로 먼저 내보내 두세요.';
+  const reviewed = acc.history.filter(function(h){ return ptCleanTags(h.tags).length || ptCleanMemo(h.memo); }).length;
+  let html = '<div class="pt-hist-tools"><span class="pt-hist-count">전체 ' + acc.history.length + '건 · 복기 ' + reviewed + '건</span>' +
+    '<span class="pt-hist-btns"><button type="button" class="pt-mini-btn" onclick="exportPtCsv(false)" title="이 계좌의 모든 청산 기록을 엑셀에서 열 수 있는 CSV 파일로 저장">CSV 내보내기</button>' +
+    (paperAccounts.length > 1 ? '<button type="button" class="pt-mini-btn" onclick="exportPtCsv(true)">모든 계좌 CSV</button>' : '') + '</span></div>' +
+    (notice ? '<div class="pt-hist-notice">' + escapeHtml(notice) + '</div>' : '');
+  html += acc.history.slice(0, shown).map(function(h){
     const isLong = h.side === 'long';
+    const tags = ptCleanTags(h.tags), memo = ptCleanMemo(h.memo);
+    const editing = ptNoteDraft && ptNoteDraft.accId === acc.id && ptNoteDraft.rowId === h.id;
     return '<div class="pt-list-item">' +
       '<div class="pt-list-head"><span class="tag ' + (isLong ? 'dir-up' : 'dir-down') + '">' + (isLong ? '롱' : '숏') + ' ' + ptLev(h.leverage) + '</span>' +
       '<span class="tag ' + (h.reason === 'liq' ? 'pt-liq' : 'cat-etc') + '">' + ptReasonLabel(h) + '</span>' +
+      (h.mode === 'cross' || h.mode === 'isolated' ? '<span class="tag cat-etc">' + (h.mode === 'cross' ? '교차' : '격리') + '</span>' : '') +
       '<span class="pt-list-time">' + ptFmtTime(h.closedAt) + '</span></div>' +
       '<div class="pt-list-main"><span class="pt-list-sub">' + formatPrice(h.entry) + (h.entries > 1 ? ' (평균)' : '') + ' → ' + formatPrice(h.exit) + ' · ' + ptQty(h.qty) + ' BTC</span>' +
       '<span class="pt-list-net ' + ptCls(h.net) + '">' + ptSigned(h.net) + ' USDT</span></div>' +
-      '<div class="pt-list-sub" style="margin-top:2px;">수수료 포함 · 손익 ' + ptSigned(h.pnl) + ' · 수수료 ' + ptMoney(h.fee) + '</div>' +
+      '<div class="pt-list-sub" style="margin-top:2px;">수수료 포함 · 손익 ' + ptSigned(h.pnl) + ' · 수수료 ' + ptMoney(h.fee) + ' · 보유 ' + ptFmtHold(Math.max(0, h.closedAt - h.openedAt)) + '</div>' +
+      (!editing && tags.length ? '<div class="pt-note-tags">' + tags.map(function(t){ return '<span class="pt-note-tag">#' + escapeHtml(t) + '</span>'; }).join('') + '</div>' : '') +
+      (!editing && memo ? '<div class="pt-note-memo">' + escapeHtml(memo) + '</div>' : '') +
+      (editing ? ptNoteEditorHtml(acc) :
+        '<div class="pt-note-row"><button type="button" class="pt-note-btn" data-id="' + ptAttr(h.id) + '" onclick="ptEditNote(this.dataset.id)">' + (tags.length || memo ? '복기 수정' : '복기 작성') + '</button></div>') +
     '</div>';
-  }).join('') + (acc.history.length > 50 ? '<div class="chart-hint" style="margin-top:10px;">최근 50건만 표시해요. (전체 ' + acc.history.length + '건은 저장돼 있어요)</div>' : '');
+  }).join('');
+  if(shown < acc.history.length) html += '<div class="pt-more-row"><button type="button" class="pt-mini-btn" onclick="ptShowMoreHistory()">더 보기 (+50건)</button><span class="pt-hist-count">' + shown + ' / ' + acc.history.length + '건 표시</span></div>';
+  body.innerHTML = html;
+}
+function ptShowMoreHistory(){ ptHistoryShown += 50; renderPtHistory(true); }
+function ptEditNote(rowId){
+  const acc = getCurrentPaperAccount();
+  const h = acc.history.find(function(x){ return x.id === rowId; });
+  if(!h) return;
+  if(ptNoteDraft && ptNoteDraft.rowId !== rowId && ptNoteIsDirty() && !window.confirm('작성 중인 복기가 있어요. 저장하지 않고 다른 거래를 열까요?')) return;
+  ptNoteDraft = { accId:acc.id, rowId:rowId, tags:ptCleanTags(h.tags), memo:ptCleanMemo(h.memo), custom:'' };
+  renderPtHistory(true);
+  const ta = ptEl('pt-note-memo');
+  if(ta){ try{ ta.focus({ preventScroll:true }); }catch(e){ ta.focus(); } }
+}
+function ptNoteDraftSync(){
+  if(!ptNoteDraft) return;
+  const ta = ptEl('pt-note-memo'), cu = ptEl('pt-note-custom');
+  if(ta){ ptNoteDraft.memo = ta.value; const c = ptEl('pt-note-count'); if(c) c.textContent = ta.value.length + '/' + PT_MEMO_LEN; }
+  if(cu) ptNoteDraft.custom = cu.value;
+}
+function ptToggleNoteTag(btn){
+  if(!ptNoteDraft || !btn) return;
+  ptNoteDraftSync();
+  const tag = btn.dataset.tag, i = ptNoteDraft.tags.indexOf(tag);
+  if(i >= 0) ptNoteDraft.tags.splice(i, 1);
+  else{
+    if(ptNoteDraft.tags.length >= PT_TAG_MAX){ showToast('태그는 거래마다 최대 ' + PT_TAG_MAX + '개까지 달 수 있어요.'); return; }
+    ptNoteDraft.tags.push(tag);
+  }
+  const on = ptNoteDraft.tags.indexOf(tag) >= 0;
+  btn.classList.toggle('on', on);
+  btn.setAttribute('aria-pressed', String(on));
+}
+function ptAddCustomTag(){
+  if(!ptNoteDraft) return;
+  ptNoteDraftSync();
+  const tag = ptCleanTags([ptNoteDraft.custom])[0];
+  if(!tag){ ptNoteDraft.custom = ''; const cu = ptEl('pt-note-custom'); if(cu) cu.value = ''; return; }
+  if(ptNoteDraft.tags.indexOf(tag) < 0){
+    if(ptNoteDraft.tags.length >= PT_TAG_MAX){ showToast('태그는 거래마다 최대 ' + PT_TAG_MAX + '개까지 달 수 있어요.'); return; }
+    ptNoteDraft.tags.push(tag);
+  }
+  ptNoteDraft.custom = '';
+  renderPtHistory(true);
+  const cu = ptEl('pt-note-custom');
+  if(cu){ try{ cu.focus({ preventScroll:true }); }catch(e){ cu.focus(); } }
+}
+function ptSaveNote(){
+  const d = ptNoteDraft;
+  if(!d) return;
+  ptNoteDraftSync();
+  const acc = paperAccounts.find(function(a){ return a.id === d.accId; });
+  const h = acc ? acc.history.find(function(x){ return x.id === d.rowId; }) : null;
+  if(!h){ ptNoteDraft = null; renderPtHistory(true); showToast('이 거래 기록을 찾을 수 없어요.'); return; }
+  const tags = ptCleanTags(d.tags.concat(d.custom ? [d.custom] : []));   // 입력칸에 적어 두고 '추가'를 안 눌렀어도 함께 저장
+  const memo = ptCleanMemo(d.memo);
+  if(tags.length) h.tags = tags; else delete h.tags;
+  if(memo) h.memo = memo; else delete h.memo;
+  ptNoteDraft = null;
+  const saved = savePaperState();
+  renderPaperTrading();
+  renderPtHistory(true);
+  if(saved) showToast('복기를 저장했어요.');
+}
+function ptCancelNote(){
+  if(ptNoteDraft && ptNoteIsDirty() && !window.confirm('작성 중인 내용을 저장하지 않고 닫을까요?')) return;
+  ptNoteDraft = null;
+  renderPtHistory(true);
+}
+function exportPtCsv(all){
+  const accs = all ? paperAccounts : [getCurrentPaperAccount()];
+  const total = accs.reduce(function(s, a){ return s + a.history.length; }, 0);
+  if(!total){ showToast('내보낼 거래 내역이 없어요.'); return; }
+  const csv = '﻿' + ptHistoryCsv(accs);   // 맨 앞의 BOM: 엑셀에서 한글이 깨지지 않게
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'coin-study-paper-trades-' + (all ? 'all' : accs[0].name.replace(/[^0-9A-Za-z가-힣_-]+/g, '_')) + '-' + todayLocalISO() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  const lost = accs.reduce(function(s, x){ return s + (x.trimmed ? x.trimmed.rows : 0); }, 0);
+  showToast('거래 ' + total + '건을 CSV로 내보냈어요.' + (lost ? ' (보관 한도를 넘어 정리된 오래된 ' + lost + '건은 빠져 있어요)' : ''));
+}
+
+// ---------- 통계 탭 ----------
+let ptStatsDim = 'side';
+function setPtStatsDim(k){
+  if(!PT_STAT_DIMS.some(function(d){ return d.k === k; })) return;
+  ptStatsDim = k;
+  renderPtStats();
+}
+function ptEquityCurveSvg(curve, base, mddIdx){
+  const W = 600, H = 180, pl = 10, pr = 10, pt = 14, pb = 20;
+  const vals = curve.map(function(c){ return c.equity; });
+  let lo = Math.min.apply(null, vals.concat(base)), hi = Math.max.apply(null, vals.concat(base));
+  if(hi - lo < 1e-9){ hi += 1; lo -= 1; }
+  const padv = (hi - lo) * 0.1; lo -= padv; hi += padv;
+  const n = curve.length;
+  const x = function(i){ return pl + (n <= 1 ? 0.5 : i / (n - 1)) * (W - pl - pr); };
+  const y = function(v){ return pt + (hi - v) / (hi - lo) * (H - pt - pb); };
+  let d = '';
+  curve.forEach(function(c, i){ d += (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(c.equity).toFixed(1); });
+  const last = curve[n - 1];
+  const up = last.equity >= base;
+  const dots = n <= 60 ? curve.slice(1).map(function(c, i){ return '<circle cx="' + x(i + 1).toFixed(1) + '" cy="' + y(c.equity).toFixed(1) + '" r="2.5" class="pt-eq-dot"/>'; }).join('') : '';
+  const mdd = (mddIdx > 0 && curve[mddIdx]) ? '<circle cx="' + x(mddIdx).toFixed(1) + '" cy="' + y(curve[mddIdx].equity).toFixed(1) + '" r="5" class="pt-eq-mdd"/>' : '';
+  return '<svg class="pt-eq-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="실현 자산 곡선: 시작 ' + ptMoney(base) + ' USDT에서 현재 ' + ptMoney(last.equity) + ' USDT">' +
+    '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(base).toFixed(1) + '" y2="' + y(base).toFixed(1) + '" class="pt-eq-base"/>' +
+    '<path d="' + d + '" class="pt-eq-line ' + (up ? 'up' : 'down') + '" fill="none"/>' + dots + mdd +
+    '<circle cx="' + x(n - 1).toFixed(1) + '" cy="' + y(last.equity).toFixed(1) + '" r="4" class="pt-eq-end ' + (up ? 'up' : 'down') + '"/></svg>';
+}
+function renderPtStats(){
+  const body = ptEl('pt-stats-body');
+  if(!body) return;
+  const acc = getCurrentPaperAccount();
+  const trades = ptBuildTrades(acc.history);
+  const open = ptTradeStats(acc.history).openPartialRows;
+  const cnt = ptEl('pt-count-stats');
+  if(cnt) cnt.textContent = String(trades.length);
+  if(ptBottomTab !== 'stats') return;   // 통계 탭을 보고 있을 때만 그림
+  if(trades.length === 0){
+    body.innerHTML = '<div class="empty">아직 통계를 낼 거래가 없어요.<br>포지션을 완전히 청산하면 여기에 쌓여요.' + (open ? '<br><span style="font-size:12px;">진행 중인 포지션의 분할 청산 ' + open + '건은 마지막 청산 뒤에 반영돼요.</span>' : '') + '</div>';
+    return;
+  }
+  const base = acc.initialBalance + (acc.trimmed ? acc.trimmed.net : 0);
+  const s = ptCalcStats(trades, base);
+  const sg = function(v){ return v === null ? '-' : ptSigned(v); };
+  const cell = function(label, valueHtml, sub){
+    return '<div class="pt-stat-card"><div class="pt-stat-label">' + label + '</div><div class="pt-stat-value">' + valueHtml + '</div>' + (sub ? '<div class="pt-stat-sub">' + sub + '</div>' : '') + '</div>';
+  };
+  const cls = function(v){ return v === null ? '' : ptCls(v); };
+  const pfText = s.profitFactor === null ? '-' : (s.profitFactor === Infinity ? '∞' : s.profitFactor.toFixed(2));
+  const streakText = s.curStreak.type ? '현재 ' + s.curStreak.n + (s.curStreak.type === 'win' ? '연승' : '연패') : '현재 연속 없음';
+  let html = '<div class="pt-stat-grid">' +
+    cell('거래 수', s.total + '회', '승 ' + s.wins + ' · 패 ' + s.losses + (s.flat ? ' · 무 ' + s.flat : '')) +
+    cell('승률', (s.winRate * 100).toFixed(1) + '%') +
+    cell('총 손익 (수수료 포함)', '<span class="' + cls(s.netSum) + '">' + sg(s.netSum) + '</span>', '수수료 합계 ' + ptMoney(s.feeSum)) +
+    cell('거래당 평균 (기대값)', '<span class="' + cls(s.expectancy) + '">' + sg(s.expectancy) + '</span>') +
+    cell('평균 이익 / 평균 손실', '<span class="pt-up">' + sg(s.avgWin) + '</span> / <span class="pt-down">' + sg(s.avgLoss) + '</span>', '손익비 ' + (s.payoff === null ? '-' : s.payoff.toFixed(2))) +
+    cell('Profit Factor', pfText, '총이익 ÷ 총손실') +
+    cell('최대 낙폭', s.mdd.amount > 0 ? '<span class="pt-down">-' + ptMoney(s.mdd.amount) + '</span>' : '0.00', s.mdd.amount > 0 ? s.mdd.pct.toFixed(2) + '% (고점 ' + ptMoney(s.mdd.peak) + ')' : '실현 기준') +
+    cell('최대 연승 / 연패', s.maxWinStreak + ' / ' + s.maxLossStreak, streakText) +
+    cell('최고 / 최악 거래', '<span class="' + cls(s.best) + '">' + sg(s.best) + '</span> / <span class="' + cls(s.worst) + '">' + sg(s.worst) + '</span>') +
+    cell('평균 보유 시간', ptFmtHold(s.avgHoldMs)) +
+    cell('복기 작성률', Math.round(s.reviewRate * 100) + '%', s.reviewed + ' / ' + s.total + '건') +
+  '</div>';
+  html += '<div class="pt-stat-title">실현 자산 곡선 <span>(청산한 거래만 반영 · 시작 ' + ptMoney(base) + ' → 현재 ' + ptMoney(s.endEquity) + ')</span></div>' +
+    '<div class="pt-eq-wrap">' + ptEquityCurveSvg(s.curve, base, s.mdd.atIndex) + '</div>' +
+    '<div class="pt-eq-legend"><span><i class="pt-eq-key base"></i>시작 자산</span><span><i class="pt-eq-key mdd"></i>최대 낙폭 지점</span></div>';
+  const dim = PT_STAT_DIMS.find(function(d){ return d.k === ptStatsDim; }) || PT_STAT_DIMS[0];
+  const rows = ptStatTable(trades, dim.k);
+  html += '<div class="pt-stat-title">구분별 비교</div><div class="pt-dimtabs" role="tablist">' + PT_STAT_DIMS.map(function(d){
+    return '<button type="button" class="pt-dimtab' + (d.k === dim.k ? ' active' : '') + '" aria-pressed="' + (d.k === dim.k) + '" onclick="setPtStatsDim(\'' + d.k + '\')">' + d.label + '</button>';
+  }).join('') + '</div>';
+  const hint = dim.k === 'weekday' || dim.k === 'hour' ? '진입 시각 기준 (한국 시간)' : dim.k === 'tag' ? '태그를 여러 개 단 거래는 각 태그에 모두 포함돼요 · 합계 손익이 낮은 태그부터' : dim.k === 'lev' ? '여러 번 나눠 청산한 거래는 증거금 가중 평균 레버리지' : '';
+  if(hint) html += '<div class="pt-stat-hint">' + hint + '</div>';
+  if(rows.length === 0) html += '<div class="empty" style="padding:14px 0;">표시할 데이터가 없어요.</div>';
+  else html += '<table class="pt-stat-table"><thead><tr><th>구분</th><th>거래</th><th>승률</th><th>평균 손익</th><th>합계</th></tr></thead><tbody>' + rows.map(function(r){
+    return '<tr class="' + (r.thin ? 'thin' : '') + '"><td>' + escapeHtml(r.name) + (r.thin ? ' <span class="pt-thin">표본 적음</span>' : '') + '</td><td>' + r.n + '</td><td>' + (r.winRate * 100).toFixed(0) + '%</td>' +
+      '<td class="' + ptCls(r.avg) + '">' + ptSigned(r.avg) + '</td><td class="' + ptCls(r.net) + '">' + ptSigned(r.net) + '</td></tr>';
+  }).join('') + '</tbody></table>';
+  html += '<div class="pt-stat-caution">' + (s.total < PT_STAT_ENOUGH_N
+    ? '거래가 ' + s.total + '건이에요. ' + PT_STAT_ENOUGH_N + '건 이상 쌓이기 전의 통계는 우연일 수 있어서 참고용으로만 봐주세요. 구분별로 ' + PT_STAT_THIN_N + '건 미만이면 \'표본 적음\'으로 표시돼요.'
+    : '표본이 충분해 보여도 과거 결과가 앞으로를 보장하지는 않아요. 매매 방식을 돌아보는 학습·기록용 참고 자료로만 봐주세요.') + '</div>';
+  const notes = [];
+  if(open) notes.push('진행 중인 포지션의 분할 청산 ' + open + '건은 마지막 청산 뒤에 반영돼요.');
+  if(acc.trimmed && acc.trimmed.rows > 0) notes.push('보관 한도를 넘어 정리된 오래된 기록 ' + acc.trimmed.rows + '건은 통계에서 빠져 있어요(손익은 자산 곡선의 시작점에 반영).');
+  if(notes.length) html += '<div class="pt-stat-hint" style="margin-top:6px;">' + notes.map(escapeHtml).join(' ') + '</div>';
+  body.innerHTML = html;
+}
+
+// ---------- 위험 금액 기준 증거금 계산 ----------
+let ptRiskPrefs = (function(){
+  const s = loadLocal('ptRiskPrefs', null) || {};
+  return { unit: s.unit === 'usdt' ? 'usdt' : 'pct', value: (typeof s.value === 'string' && /^\d*\.?\d*$/.test(s.value)) ? s.value.slice(0, 12) : '', open: s.open === true };
+})();
+let ptRiskLast = null;   // 마지막 계산 결과 (증거금 넣기 버튼이 씀)
+function savePtRiskPrefs(){ saveLocalQuiet('ptRiskPrefs', ptRiskPrefs); }
+function ptRiskInit(){
+  const inp = ptEl('pt-risk-input'), sel = ptEl('pt-risk-unit'), box = ptEl('pt-risk-box');
+  if(inp) inp.value = ptRiskPrefs.value;
+  if(sel) sel.value = ptRiskPrefs.unit;
+  if(box) box.open = !!ptRiskPrefs.open;
+}
+function onPtRiskInput(){
+  const inp = ptEl('pt-risk-input'), sel = ptEl('pt-risk-unit');
+  if(inp) sanitizeNumericInput(inp);
+  ptRiskPrefs.value = inp ? inp.value : '';
+  ptRiskPrefs.unit = sel && sel.value === 'usdt' ? 'usdt' : 'pct';
+  savePtRiskPrefs();
+  renderPtRiskCalc();
+}
+function onPtRiskToggle(){
+  const box = ptEl('pt-risk-box');
+  ptRiskPrefs.open = !!(box && box.open);
+  savePtRiskPrefs();
+  renderPtRiskCalc();
+}
+function setPtRiskQuick(pct){
+  const inp = ptEl('pt-risk-input'), sel = ptEl('pt-risk-unit');
+  if(sel) sel.value = 'pct';
+  if(inp) inp.value = String(pct);
+  onPtRiskInput();
+}
+// 입력값으로 계산. { kind:'hint'|'error'|'ok', msg, r, risk, warns:[] }
+function ptRiskCompute(){
+  const acc = getCurrentPaperAccount();
+  const price = ptBtc.price;
+  if(!price) return { kind:'hint', msg:'BTC 시세를 불러오는 중이에요...' };
+  const unit = ptRiskPrefs.unit;
+  const val = ptReadNumber('pt-risk-input');
+  if(!val) return { kind:'hint', msg:'손절 시 잃고 싶은 금액을 입력하세요. (예: 자산의 1%)' };
+  if(unit === 'pct' && val > 100) return { kind:'error', msg:'위험 비율은 100% 이하로 입력해주세요.' };
+  let ref = price;
+  if(ptOrderType === 'limit'){
+    ref = ptReadNumber('pt-limit-input');
+    if(!ref) return { kind:'hint', msg:'지정가를 먼저 입력해주세요.' };
+  }
+  const sl = ptReadNumber('pt-order-sl');
+  if(!sl) return { kind:'hint', msg:'위쪽 손절가를 입력하면 증거금을 계산해요.' };
+  const equity = ptAccountEquity(acc, price);
+  const risk = unit === 'pct' ? equity * val / 100 : val;
+  if(!(risk > 0)) return { kind:'error', msg:'위험 금액이 0보다 커야 해요.' };
+  const r = ptRiskSizing({ risk:risk, entry:ref, sl:sl, leverage:acc.leverage, entryFeeRate:ptEntryFeeRate(), balance:acc.balance });
+  if(!r.ok){
+    return { kind:'error', msg: r.reason === 'same' ? '손절가가 진입 가격과 같아요.' : r.reason === 'tiny' ? (r.capped ? '사용 가능한 잔고가 거의 없어서 주문할 수 없어요.' : '위험 금액이 너무 작아서 증거금이 0.01 USDT도 안 돼요.') : (acc.balance > 0 ? '입력값을 확인해주세요.' : '사용 가능한 잔고가 없어요.') };
+  }
+  const side = sl < ref ? 'long' : 'short';
+  const warns = [];
+  if(acc.position && acc.position.side !== side) warns.push('이미 ' + (acc.position.side === 'long' ? '롱' : '숏') + ' 포지션이 있어요. 이 손절가는 ' + (side === 'long' ? '롱' : '숏') + ' 기준이라 반대 방향 진입은 막혀요.');
+  const open = ptOrdersOf(acc);
+  if(open.length && open[0].side !== side) warns.push('반대 방향 미체결 주문이 있어요.');
+  if(r.capped) warns.push('사용 가능한 잔고가 부족해서 입력한 위험을 다 쓰지 못해요. 이 잔고로 잡을 수 있는 최대 위험은 약 ' + ptMoney(r.maxRisk) + ' USDT예요.');
+  if(r.belowMin) warns.push('포지션 크기가 최소 ' + PT_MIN_NOTIONAL + ' USDT보다 작아서 주문할 수 없어요.');
+  else{
+    const liq = ptPosLiq(ptMergedPosition(null, side, ref, r.margin, acc.leverage), acc, r.margin + r.fee);
+    if(!ptSlIsEffective(side, sl, liq)) warns.push('이 손절가는 예상 청산가(' + ptLiqText(liq) + ')보다 멀어서 손절 전에 청산돼요. 레버리지를 낮추거나 손절가를 가깝게 잡아주세요.');
+  }
+  if(acc.position && acc.position.side === side) warns.push('기존 포지션이 있어요. 이 계산은 새 주문 하나만 기준이고, 합산 손익은 아래 미리보기에서 확인하세요.');
+  return { kind:'ok', r:r, risk:risk, equity:equity, side:side, warns:warns, usable:!r.belowMin };
+}
+function renderPtRiskCalc(){
+  const box = ptEl('pt-risk-box'), out = ptEl('pt-risk-result'), btn = ptEl('pt-risk-apply');
+  if(!out) return;
+  if(box && !box.open){ ptRiskLast = null; return; }   // 접혀 있으면 계산하지 않음
+  const c = ptRiskCompute();
+  ptRiskLast = c.kind === 'ok' && c.usable ? c : null;
+  if(btn) btn.disabled = !ptRiskLast;
+  if(c.kind !== 'ok'){
+    out.innerHTML = '<div class="' + (c.kind === 'error' ? 'pt-preview-warn' : 'chart-hint') + '" style="margin-top:0;">' + escapeHtml(c.msg) + '</div>';
+    return;
+  }
+  const r = c.r;
+  const row = function(l, v){ return '<div class="pt-preview-row"><span>' + l + '</span><span>' + v + '</span></div>'; };
+  const pctOfEq = c.equity > 0 ? r.loss / c.equity * 100 : NaN;
+  out.innerHTML =
+    row('필요한 증거금', '<b>' + ptMoney(r.margin) + ' USDT</b>') +
+    row('포지션 크기 · 수량', ptMoney(r.notional) + ' USDT · ' + ptQty(r.qty) + ' BTC') +
+    row('손절 시 예상 손실 (수수료 포함)', '<span class="pt-down">-' + ptMoney(r.loss) + '</span>' + (isFinite(pctOfEq) ? ' (자산의 ' + pctOfEq.toFixed(2) + '%)' : '')) +
+    row('진입 → 손절 가격 차이', (r.d * 100).toFixed(2) + '%') +
+    c.warns.map(function(w){ return '<div class="pt-preview-warn">' + escapeHtml(w) + '</div>'; }).join('');
+}
+function applyPtRiskMargin(){
+  renderPtRiskCalc();
+  const c = ptRiskLast;
+  if(!c){ showToast('먼저 손절가와 위험 금액을 입력해주세요.'); return; }
+  const inp = ptEl('pt-margin-input');
+  inp.value = String(c.r.margin);
+  renderPtOrderPreviewFromInput();
+  showToast('증거금 ' + ptMoney(c.r.margin) + ' USDT를 넣었어요. 손절가에서 약 ' + ptMoney(c.r.loss) + ' USDT(수수료 포함)를 잃어요.');
 }
 // 가격이 바뀔 때마다 숫자만 갈아끼움 (입력창은 건드리지 않음)
 function updatePtLiveValues(){
@@ -5241,6 +6461,7 @@ function updatePtLiveValues(){
   }
   setPtFeedStatus();
   if(!price) return;
+  renderPtLimitOffset();
   const acc = getCurrentPaperAccount();
   const pos = acc.position;
   document.querySelectorAll('[data-pt-eq]').forEach(function(el){
@@ -5266,11 +6487,12 @@ function updatePtLiveValues(){
     set('pt-pos-pnl', ptSigned(upnl), ptCls(upnl));
     set('pt-pos-roe', ptPct(roe), ptCls(roe));
     set('pt-pos-mark', formatPrice(price));
-    const liq = ptPosLiq(pos);
+    const liq = ptPosLiq(pos, acc);
     const dist = pos.side === 'long' ? (price - liq) / price * 100 : (liq - price) / price * 100;
-    set('pt-pos-liqdist', (dist >= 0 ? '' : '-') + Math.abs(dist).toFixed(2) + '%');
+    set('pt-pos-liqdist', liq > 0 ? (dist >= 0 ? '' : '-') + Math.abs(dist).toFixed(2) + '%' : '-');
   }
   if(ptOrderType === 'market') renderPtOrderPreviewFromInput();
+  if(ptQuick) ptQuickRender();
 }
 function renderPaperTrading(){
   if(!ptEl('pt-account-tabs')) return;
@@ -5281,6 +6503,7 @@ function renderPaperTrading(){
   renderPtPosition();
   renderPtOrders();
   renderPtHistory();
+  renderPtStats();
   renderPtOrderPreviewFromInput();
   updatePtLiveValues();
   updatePtChartLines();
@@ -5296,19 +6519,21 @@ const PT_LW_URLS = [
 const PT_KLINE_REST = ['https://api.binance.com/api/v3', 'https://data-api.binance.vision/api/v3'];
 const PT_KLINE_WS = ['wss://stream.binance.com:9443/ws/', 'wss://data-stream.binance.vision:443/ws/'];
 const PT_TIMEFRAMES = [
-  { k:'1m', label:'1분' }, { k:'5m', label:'5분' }, { k:'15m', label:'15분' },
+  { k:'1m', label:'1분' }, { k:'5m', label:'5분' }, { k:'15m', label:'15분' }, { k:'30m', label:'30분' },
   { k:'1h', label:'1시간' }, { k:'4h', label:'4시간' }, { k:'1d', label:'1일' }
 ];
 const PT_CHART_BG = '#1C1A24';
-const PT_LINE_COLORS = { entry:'#E4E4E7', liq:'#D946EF', tp:'#2E9E68', sl:'#F59E0B', pending:'#94A3B8', preview:'#64748B' };
+const PT_VWMA_PERIOD = 100;        // VWMA: 최근 100개 캔들의 (종가 × 거래량) 합 ÷ 거래량 합
+const PT_VWMA_COLOR = '#FFFFFF';
+const PT_LINE_COLORS = { entry:'#E4E4E7', liq:'#D946EF', tp:'#2E9E68', sl:'#F59E0B', pending:'#94A3B8', preview:'#64748B', drag:'#38BDF8', dragBad:'#EF4444', market:'#A3E635' };
 
 let ptChartPrefs = (function(){
   const saved = loadLocal('ptChartPrefs', null) || {};
   const okTf = PT_TIMEFRAMES.some(function(t){ return t.k === saved.tf; });
-  return { tf: okTf ? saved.tf : '15m', ma: saved.ma !== false, vol: saved.vol !== false };
+  return { tf: okTf ? saved.tf : '15m', vwma: saved.vwma !== false, vol: saved.vol !== false };   // 예전 저장값의 ma(이동평균선)는 더 이상 쓰지 않음
 })();
 let ptChartState = 'idle';      // idle | loading | ready | tv (TradingView 대체 표시)
-let ptChart = null;             // { chart, candle, volume, ma20, ma60, candles:[] }
+let ptChart = null;             // { chart, candle, volume, vwma, candles:[] }
 let ptChartReq = 0;
 let ptChartLoadTries = 0;
 let ptChartLines = {};
@@ -5404,21 +6629,20 @@ function ptCleanCandles(list){
   });
   return Array.from(byTime.values()).sort(function(a, b){ return a.time - b.time; });
 }
-function ptCalcMa(list, n){
+// VWMA(거래량 가중 이동평균) = 최근 n개 캔들의 Σ(종가×거래량) ÷ Σ거래량. 거래량 합이 0이면 값 없음(null)
+function ptVwmaAt(list, i, n){
+  if(i < n - 1) return null;
+  let pv = 0, v = 0;
+  for(let j = i - n + 1; j <= i; j++){ pv += list[j].close * list[j].volume; v += list[j].volume; }
+  return v > 0 ? pv / v : null;
+}
+function ptCalcVwma(list, n){
   const out = [];
-  let sum = 0;
-  for(let i = 0; i < list.length; i++){
-    sum += list[i].close;
-    if(i >= n) sum -= list[i - n].close;
-    if(i >= n - 1) out.push({ time:list[i].time, value:sum / n });
+  for(let i = n - 1; i < list.length; i++){
+    const v = ptVwmaAt(list, i, n);
+    if(v !== null) out.push({ time:list[i].time, value:v });
   }
   return out;
-}
-function ptMaAt(list, i, n){
-  if(i < n - 1) return null;
-  let s = 0;
-  for(let j = i - n + 1; j <= i; j++) s += list[j].close;
-  return s / n;
 }
 function ptVolColor(c){
   return c.close >= c.open ? ptChart.upA : ptChart.downA;
@@ -5428,8 +6652,7 @@ function ptChartSetCandles(list, zoom){
   c.candles = list;
   c.candle.setData(list.map(function(x){ return { time:x.time, open:x.open, high:x.high, low:x.low, close:x.close }; }));
   c.volume.setData(list.map(function(x){ return { time:x.time, value:x.volume, color:ptVolColor(x) }; }));
-  c.ma20.setData(ptCalcMa(list, 20));
-  c.ma60.setData(ptCalcMa(list, 60));
+  c.vwma.setData(ptCalcVwma(list, PT_VWMA_PERIOD));
   if(zoom){
     const n = list.length;
     c.chart.timeScale().setVisibleLogicalRange({ from:Math.max(0, n - 110), to:n + 8 });
@@ -5450,9 +6673,8 @@ function ptChartApplyBar(b){
     c.candle.update({ time:b.time, open:b.open, high:b.high, low:b.low, close:b.close });
     c.volume.update({ time:b.time, value:b.volume, color:ptVolColor(b) });
     const i = arr.length - 1;
-    const m20 = ptMaAt(arr, i, 20), m60 = ptMaAt(arr, i, 60);
-    if(m20 !== null) c.ma20.update({ time:b.time, value:m20 });
-    if(m60 !== null) c.ma60.update({ time:b.time, value:m60 });
+    const vw = ptVwmaAt(arr, i, PT_VWMA_PERIOD);
+    if(vw !== null) c.vwma.update({ time:b.time, value:vw });
   }catch(e){ console.error('[paper chart] update', e); }
   if(!c.hoverActive) ptChartLegendLast();
 }
@@ -5533,6 +6755,8 @@ function ptKlineConnect(){
 }
 // 모의투자 화면을 벗어나면 연결을 멈추고, 돌아오면 최신 캔들을 다시 받아 이어 붙임
 function ptChartPause(){
+  ptQuickClose();
+  ptQuickHidePlus();
   if(ptChartState === 'ready') ptKlineDisconnect();
 }
 function ptChartResume(){
@@ -5558,7 +6782,7 @@ document.addEventListener('visibilitychange', function(){
 window.addEventListener('online', ptChartRefreshIfVisible);
 
 // ---------- 범례 (시가·고가·저가·종가 등) ----------
-function ptChartRenderLegend(bar, vol, m20, m60){
+function ptChartRenderLegend(bar, vol, vwma){
   const el = ptEl('pt-chart-legend');
   if(!el || !bar) return;
   const up = bar.close >= bar.open;
@@ -5567,10 +6791,7 @@ function ptChartRenderLegend(bar, vol, m20, m60){
   const f = function(n){ return n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); };
   let html = '<span>시 <b>' + f(bar.open) + '</b></span><span>고 <b>' + f(bar.high) + '</b></span><span>저 <b>' + f(bar.low) + '</b></span><span>종 <b style="color:' + color + '">' + f(bar.close) + '</b></span><span style="color:' + color + '">' + (chg > 0 ? '+' : '') + chg.toFixed(2) + '%</span>';
   if(ptChartPrefs.vol && isFinite(vol)) html += '<span>거래량 <b>' + vol.toLocaleString('en-US', { maximumFractionDigits:2 }) + '</b></span>';
-  if(ptChartPrefs.ma){
-    if(isFinite(m20) && m20 !== null) html += '<span style="color:#F0B90B">MA20 ' + f(m20) + '</span>';
-    if(isFinite(m60) && m60 !== null) html += '<span style="color:#B28DFF">MA60 ' + f(m60) + '</span>';
-  }
+  if(ptChartPrefs.vwma && vwma !== null && vwma !== undefined && isFinite(vwma)) html += '<span style="color:' + PT_VWMA_COLOR + '">VWMA' + PT_VWMA_PERIOD + ' ' + f(vwma) + '</span>';
   el.innerHTML = html;
 }
 function ptChartLegendLast(){
@@ -5578,7 +6799,7 @@ function ptChartLegendLast(){
   if(!c || !c.candles || c.candles.length === 0) return;
   const i = c.candles.length - 1;
   const bar = c.candles[i];
-  ptChartRenderLegend(bar, bar.volume, ptMaAt(c.candles, i, 20), ptMaAt(c.candles, i, 60));
+  ptChartRenderLegend(bar, bar.volume, ptVwmaAt(c.candles, i, PT_VWMA_PERIOD));
 }
 
 // ---------- 차트 만들기 ----------
@@ -5604,14 +6825,12 @@ function ptChartBuild(LW){
     priceFormat:{ type:'volume' }, priceScaleId:'', lastValueVisible:false, priceLineVisible:false
   });
   volume.priceScale().applyOptions({ scaleMargins:{ top:0.8, bottom:0 } });
-  const maOpts = function(color){
-    return { color:color, lineWidth:1, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false };
-  };
-  const ma20 = chart.addSeries(LW.LineSeries, maOpts('#F0B90B'));
-  const ma60 = chart.addSeries(LW.LineSeries, maOpts('#B28DFF'));
-  ptChart = { chart:chart, candle:candle, volume:volume, ma20:ma20, ma60:ma60, candles:[], hoverActive:false,
+  const vwma = chart.addSeries(LW.LineSeries, { color:PT_VWMA_COLOR, lineWidth:2, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+  ptChart = { chart:chart, candle:candle, volume:volume, vwma:vwma, candles:[], hoverActive:false,
     upA:ptHexA(up, 0.45), downA:ptHexA(down, 0.45) };
   ptChartApplyIndicatorVisibility();
+  ptBindChartDrag();
+  ptQuickBind();
   chart.subscribeCrosshairMove(function(param){
     const c = ptChart;
     if(!c) return;
@@ -5620,9 +6839,8 @@ function ptChartBuild(LW){
     if(!bar){ c.hoverActive = false; ptChartLegendLast(); return; }
     c.hoverActive = true;
     const v = param.seriesData.get(c.volume);
-    const m20 = param.seriesData.get(c.ma20);
-    const m60 = param.seriesData.get(c.ma60);
-    ptChartRenderLegend(bar, v ? v.value : NaN, m20 ? m20.value : null, m60 ? m60.value : null);
+    const vw = param.seriesData.get(c.vwma);
+    ptChartRenderLegend(bar, v ? v.value : NaN, vw ? vw.value : null);
   });
 }
 // '#RRGGBB' 또는 'rgb(...)' 색을 반투명하게 (거래량 막대용)
@@ -5638,8 +6856,7 @@ function ptChartApplyIndicatorVisibility(){
   const c = ptChart;
   if(!c) return;
   try{
-    c.ma20.applyOptions({ visible:!!ptChartPrefs.ma });
-    c.ma60.applyOptions({ visible:!!ptChartPrefs.ma });
+    c.vwma.applyOptions({ visible:!!ptChartPrefs.vwma });
     c.volume.applyOptions({ visible:!!ptChartPrefs.vol });
   }catch(e){ console.error('[paper chart] indicators', e); }
   ptChartLegendLast();
@@ -5653,9 +6870,11 @@ function renderPtChartToolbar(){
     const on = t.k === ptChartPrefs.tf;
     return '<button type="button" class="pt-tf-btn' + (on ? ' active' : '') + '" data-tf="' + t.k + '" aria-pressed="' + on + '" onclick="setPtTimeframe(this.dataset.tf)">' + t.label + '</button>';
   }).join('');
-  const ma = ptEl('pt-ind-ma'), vol = ptEl('pt-ind-vol');
-  if(ma){ ma.classList.toggle('active', !!ptChartPrefs.ma); ma.setAttribute('aria-pressed', String(!!ptChartPrefs.ma)); }
+  const vw = ptEl('pt-ind-vwma'), vol = ptEl('pt-ind-vol');
+  if(vw){ vw.classList.toggle('active', !!ptChartPrefs.vwma); vw.setAttribute('aria-pressed', String(!!ptChartPrefs.vwma)); }
   if(vol){ vol.classList.toggle('active', !!ptChartPrefs.vol); vol.setAttribute('aria-pressed', String(!!ptChartPrefs.vol)); }
+  renderPtSoundUi();
+  renderPtQuickUi();
 }
 function savePtChartPrefs(){
   saveLocalQuiet('ptChartPrefs', ptChartPrefs);
@@ -5674,7 +6893,7 @@ function setPtTimeframe(tf){
   });
 }
 function togglePtIndicator(which){
-  if(which === 'ma') ptChartPrefs.ma = !ptChartPrefs.ma;
+  if(which === 'vwma') ptChartPrefs.vwma = !ptChartPrefs.vwma;
   else if(which === 'vol') ptChartPrefs.vol = !ptChartPrefs.vol;
   else return;
   savePtChartPrefs();
@@ -5712,9 +6931,9 @@ function updatePtChartLines(){
   const SOLID = 0, DASHED = 2, LARGE_DASHED = 3;
   if(pos){
     ptSetChartLine('entry', pos.entry, (pos.side === 'long' ? '롱 진입 ' : '숏 진입 ') + ptLev(pos.leverage), PT_LINE_COLORS.entry, SOLID);
-    ptSetChartLine('liq', ptPosLiq(pos), '청산가', PT_LINE_COLORS.liq, DASHED);
+    ptSetChartLine('liq', ptPosLiq(pos, acc), '청산가', PT_LINE_COLORS.liq, DASHED);
     ptSetChartLine('tp', pos.tp || 0, '익절', PT_LINE_COLORS.tp, DASHED);
-    ptSetChartLine('sl', pos.sl || 0, ptSlIsEffective(pos.side, pos.sl, ptPosLiq(pos)) ? '손절' : '손절 (청산가 밖·무효)', PT_LINE_COLORS.sl, DASHED);
+    ptSetChartLine('sl', pos.sl || 0, ptSlIsEffective(pos.side, pos.sl, ptPosLiq(pos, acc)) ? '손절' : '손절 (청산가 밖·무효)', PT_LINE_COLORS.sl, DASHED);
   }else{
     ptSetChartLine('entry', 0); ptSetChartLine('liq', 0); ptSetChartLine('tp', 0); ptSetChartLine('sl', 0);
   }
@@ -5751,6 +6970,590 @@ function ptUpdateChartPreviewLines(){
   ptSetChartLine('pvTp', ptReadNumber('pt-order-tp') || 0, '익절 (입력)', PT_LINE_COLORS.tp, DOTTED);
   ptSetChartLine('pvSl', ptReadNumber('pt-order-sl') || 0, '손절 (입력)', PT_LINE_COLORS.sl, DOTTED);
 }
+
+// ---------- 차트에서 지정가 주문선을 끌어서 가격 바꾸기 ----------
+// 마우스: 선 위에서 누른 채 위아래로 끌고 놓으면 확정 / 터치: 선을 손가락으로 끌었다 떼면 확정 / Esc: 취소
+// 조건에 안 맞는 가격이면 선이 빨갛게 바뀌고, 놓으면 원래 가격으로 돌아가며 이유를 알려줌
+// 롱 지정가를 현재가 위로(숏은 아래로) 끌어다 놓으면 시장가로 체결 (선이 연두색으로 바뀌어 미리 알려줌). 체결할 수 없는 상태면 선이 빨갛게 바뀌고 놓으면 원래 가격으로 돌아감
+const PT_DRAG_HIT_MOUSE = 7;
+const PT_DRAG_HIT_TOUCH = 14;
+let ptDrag = null;
+function ptFindOrderLineAt(host, clientX, clientY, hit){
+  const c = ptChart;
+  if(!c || !c.candle || ptChartState !== 'ready') return null;
+  const r = host.getBoundingClientRect();
+  const x = clientX - r.left, y = clientY - r.top;
+  let axisW = 70;
+  try{ const w = c.chart.priceScale('right').width(); if(isFinite(w) && w > 0) axisW = w; }catch(e){}
+  if(x < 0 || x > r.width - axisW || y < 0 || y > r.height) return null;   // 가격 눈금 쪽은 차트 확대·축소용이라 건드리지 않음
+  let best = null, bestD = hit;
+  Object.keys(ptChartLines).forEach(function(k){
+    if(k.indexOf('ord:') !== 0) return;
+    const cur = ptChartLines[k];
+    let yy = null;
+    try{ yy = c.candle.priceToCoordinate(cur.price); }catch(e){}
+    if(yy === null || yy === undefined || !isFinite(yy)) return;
+    const d = Math.abs(yy - y);
+    if(d <= bestD){ bestD = d; best = { key:k, id:k.slice(4), cur:cur, y:yy }; }
+  });
+  return best;
+}
+function ptDragStart(host, best, clientY, isTouch){
+  const acc = getCurrentPaperAccount();
+  const o = ptOrdersOf(acc).find(function(x){ return x.id === best.id; });
+  if(!o) return false;
+  const r = host.getBoundingClientRect();
+  ptDrag = { host:host, id:o.id, key:best.key, origPrice:o.price, price:o.price, valid:true, moved:false, touch:isTouch,
+    startY:clientY, grab:best.y - (clientY - r.top) };   // 선을 잡은 위치와 선 사이의 간격을 유지해서 선이 튀지 않게
+  try{ ptChart.chart.applyOptions({ handleScroll:false, handleScale:false }); }catch(e){}
+  host.classList.add('pt-dragging');
+  host.classList.remove('pt-line-hover');
+  return true;
+}
+function ptDragMove(clientY){
+  const d = ptDrag;
+  if(!d) return;
+  if(!ptChart || !ptChart.candle){ ptDragEnd(false); return; }
+  const acc = getCurrentPaperAccount();
+  const o = ptOrdersOf(acc).find(function(x){ return x.id === d.id; });
+  if(!o){ ptDragEnd(false); showToast('끌던 주문이 체결되거나 취소돼서 멈췄어요.'); return; }
+  if(!d.moved){
+    if(Math.abs(clientY - d.startY) < 3) return;   // 클릭만 한 경우엔 움직이지 않음
+    d.moved = true;
+  }
+  const r = d.host.getBoundingClientRect();
+  const y = Math.max(0, Math.min(r.height, clientY - r.top + d.grab));
+  let p = null;
+  try{ p = ptChart.candle.coordinateToPrice(y); }catch(e){}
+  if(p === null || p === undefined || !(p > 0) || !isFinite(p)) return;
+  p = Math.round(p * 100) / 100;
+  // 롱 지정가를 현재가 위로(숏은 아래로) 끌면 놓는 순간 시장가로 체결됨 → 선 색과 문구로 미리 알려줌
+  const toMarket = !!ptBtc.price && ptIsMarketDrop(o, p, ptBtc.price);
+  const chk = !ptBtc.price ? { ok:false } : (toMarket ? ptCheckOrderMarketFill(acc, o, ptBtc.price) : ptCheckOrderMove(acc, o, p, ptBtc.price));
+  d.price = p;
+  d.valid = !!chk.ok;
+  d.market = toMarket;
+  const cur = ptChartLines[d.key];
+  if(!cur) return;
+  const pct = ptBtc.price ? (p / ptBtc.price - 1) * 100 : NaN;
+  const base = o.side === 'long' ? '지정 매수' : '지정 매도';
+  let color, title;
+  if(toMarket){
+    color = d.valid ? PT_LINE_COLORS.market : PT_LINE_COLORS.dragBad;
+    title = d.valid ? base + ' → 놓으면 시장가 체결' : base + ' (시장가 체결 불가)';
+  }else{
+    color = d.valid ? PT_LINE_COLORS.drag : PT_LINE_COLORS.dragBad;
+    title = d.valid ? base + (isFinite(pct) ? ' (' + ptPct(pct) + ')' : '') : base + ' (이 가격은 안 돼요)';
+  }
+  try{ cur.line.applyOptions({ price:p, color:color, title:title }); }catch(e){}
+}
+// commit=true면 놓은 위치로 확정 시도, false면 취소. 선 모양은 항상 저장된 가격 기준으로 되돌린 뒤 다시 그림
+function ptDragEnd(commit){
+  const d = ptDrag;
+  if(!d) return;
+  ptDrag = null;
+  try{ if(ptChart) ptChart.chart.applyOptions({ handleScroll:true, handleScale:true }); }catch(e){}
+  d.host.classList.remove('pt-dragging');
+  const cur = ptChartLines[d.key];
+  if(cur){ try{ cur.line.applyOptions({ price:cur.price, color:cur.color, title:cur.title }); }catch(e){} }
+  if(commit && d.moved && Math.abs(d.price - d.origPrice) > 1e-9){
+    // 놓는 순간의 현재가 기준으로 판단: 롱은 현재가 이상, 숏은 현재가 이하에 놓았으면 시장가 체결
+    const accEnd = getCurrentPaperAccount();
+    const oEnd = ptOrdersOf(accEnd).find(function(x){ return x.id === d.id; });
+    if(oEnd && ptBtc.price && ptIsMarketDrop(oEnd, d.price, ptBtc.price)) fillPtOrderAtMarket(d.id);
+    else movePtOrderPrice(d.id, d.price);
+  }
+  updatePtChartLines();
+}
+function ptBindChartDrag(){
+  const host = ptEl('paper-chart');
+  if(!host || host.dataset.dragBound) return;
+  host.dataset.dragBound = '1';
+  host.addEventListener('mousemove', function(e){
+    if(ptDrag) return;
+    host.classList.toggle('pt-line-hover', !!ptFindOrderLineAt(host, e.clientX, e.clientY, PT_DRAG_HIT_MOUSE));
+  }, true);
+  host.addEventListener('mouseleave', function(){ if(!ptDrag) host.classList.remove('pt-line-hover'); });
+  // 차트가 포인터 이벤트로 동작하는 경우를 대비해, 선 위에서 누른 포인터 이벤트도 차트로 넘기지 않음 (preventDefault는 안 함: 뒤따르는 mousedown·touchstart가 와야 하므로)
+  host.addEventListener('pointerdown', function(e){
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    if(ptFindOrderLineAt(host, e.clientX, e.clientY, e.pointerType === 'touch' ? PT_DRAG_HIT_TOUCH : PT_DRAG_HIT_MOUSE)) e.stopPropagation();
+  }, true);
+  host.addEventListener('mousedown', function(e){
+    if(e.button !== 0) return;
+    if(ptDrag) ptDragEnd(false);
+    const best = ptFindOrderLineAt(host, e.clientX, e.clientY, PT_DRAG_HIT_MOUSE);
+    if(!best || !ptDragStart(host, best, e.clientY, false)) return;
+    e.preventDefault();
+    e.stopPropagation();   // 차트가 이 클릭을 '차트 이동'으로 쓰지 못하게
+    const move = function(ev){ ev.preventDefault(); ev.stopPropagation(); ptDragMove(ev.clientY); };
+    const up = function(ev){
+      document.removeEventListener('mousemove', move, true);
+      document.removeEventListener('mouseup', up, true);
+      ev.stopPropagation();
+      ptDragEnd(true);
+    };
+    document.addEventListener('mousemove', move, true);
+    document.addEventListener('mouseup', up, true);
+  }, true);
+  host.addEventListener('touchstart', function(e){
+    if(ptDrag || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const best = ptFindOrderLineAt(host, t.clientX, t.clientY, PT_DRAG_HIT_TOUCH);
+    if(!best || !ptDragStart(host, best, t.clientY, true)) return;
+    ptDrag.touchId = t.identifier;   // 주문선을 잡은 손가락만 기억 (다른 손가락이 닿았다 떼어져도 끌기가 끝나지 않게)
+    e.preventDefault();
+    e.stopPropagation();
+  }, { capture:true, passive:false });
+  const dragTouchIn = function(list){
+    if(!ptDrag) return null;
+    for(let i = 0; i < list.length; i++){ if(list[i].identifier === ptDrag.touchId) return list[i]; }
+    return null;
+  };
+  host.addEventListener('touchmove', function(e){
+    if(!ptDrag || !ptDrag.touch) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const t = dragTouchIn(e.touches);
+    if(t) ptDragMove(t.clientY);
+  }, { capture:true, passive:false });
+  const touchEnd = function(commit){
+    return function(e){
+      if(!ptDrag || !ptDrag.touch) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if(!dragTouchIn(e.changedTouches)) return;   // 끌던 손가락이 아닌 다른 손가락이 떨어진 경우엔 계속 끌기
+      ptDragEnd(commit);
+    };
+  };
+  host.addEventListener('touchend', touchEnd(true), { capture:true, passive:false });
+  host.addEventListener('touchcancel', touchEnd(false), { capture:true, passive:false });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && ptDrag) ptDragEnd(false); });
+  window.addEventListener('blur', function(){ if(ptDrag) ptDragEnd(false); });
+}
+
+// ---------- 빠른 거래: 차트 가격 위에 마우스를 올리면 뜨는 + 버튼 → 가격·수량 카드 → 지정가 주문 ----------
+// 마우스: 차트 위에 올리면 가격 눈금 쪽에 + 버튼이 마우스 높이를 따라다님 / 터치: 차트를 한 번 탭하면 그 높이에 + 와 가격이 뜸
+// + 를 누르면 그 가격이 들어간 카드가 열리고, 수량(또는 증거금)을 넣고 '주문 걸기'(Enter) → 지정가 주문. 방향은 현재가보다 낮으면 매수(롱), 높으면 매도(숏)
+// 주문 검증·체결 규칙은 주문 패널의 지정가 주문과 똑같음(ptSubmitOrder). 켜기/끄기는 차트 위 '빠른 거래' 버튼
+let ptQuickPrefs = (function(){
+  const s = loadLocal('ptQuickPrefs', null) || {};
+  return { on: s.on !== false, unit: s.unit === 'margin' ? 'margin' : 'qty' };
+})();
+let ptQuickHover = null;      // 지금 + 버튼이 떠 있는 곳 { y, price }
+let ptQuick = null;           // 열려 있는 카드 { accId, side, top }
+let ptQuickTagTimer = null;
+let ptQuickLastTouch = 0;
+const PT_QUICK_BTN = 26;      // + 버튼 크기(px)
+function savePtQuickPrefs(){ saveLocalQuiet('ptQuickPrefs', ptQuickPrefs); }
+function renderPtQuickUi(){
+  const btn = ptEl('pt-ind-quick');
+  if(btn){ btn.classList.toggle('active', !!ptQuickPrefs.on); btn.setAttribute('aria-pressed', String(!!ptQuickPrefs.on)); }
+  const u = ptQuickPrefs.unit;
+  [['pt-qt-u-qty', 'qty'], ['pt-qt-u-margin', 'margin']].forEach(function(x){
+    const b = ptEl(x[0]);
+    if(b){ b.classList.toggle('active', u === x[1]); b.setAttribute('aria-pressed', String(u === x[1])); }
+  });
+  const lab = ptEl('pt-qt-amount-label');
+  if(lab) lab.textContent = u === 'qty' ? '수량 (BTC)' : '증거금 (USDT)';
+  const am = ptEl('pt-qt-amount');
+  if(am) am.placeholder = u === 'qty' ? '0.000' : '0.00';
+}
+function setPtQuickOn(on){
+  ptQuickPrefs.on = !!on;
+  savePtQuickPrefs();
+  renderPtQuickUi();
+  if(!ptQuickPrefs.on){ ptQuickClose(); ptQuickHidePlus(); }
+}
+function togglePtQuick(){
+  setPtQuickOn(!ptQuickPrefs.on);
+  showToast(ptQuickPrefs.on ? '빠른 거래를 켰어요. 차트에서 가격 위에 마우스를 올리고 + 를 눌러보세요. (터치는 차트를 한 번 탭)' : '빠른 거래를 껐어요.');
+}
+// 차트 그림 영역(가격 눈금·시간 눈금 제외)의 크기
+function ptQuickGeom(){
+  const host = ptEl('paper-chart');
+  const r = host.getBoundingClientRect();
+  let axisW = 70, timeH = 26;
+  try{ const w = ptChart.chart.priceScale('right').width(); if(isFinite(w) && w > 0) axisW = w; }catch(e){}
+  try{ const h = ptChart.chart.timeScale().height(); if(isFinite(h) && h > 0) timeH = h; }catch(e){}
+  return { r:r, w:r.width, h:r.height, axisW:axisW, timeH:timeH, plotH:r.height - timeH };
+}
+function ptQuickSideFor(price){
+  const cur = ptBtc.price;
+  if(!cur || !(price > 0)) return null;
+  return price < cur ? 'long' : (price > cur ? 'short' : null);
+}
+function ptQuickHidePlus(){
+  ptQuickHover = null;
+  clearTimeout(ptQuickTagTimer);
+  const b = ptEl('pt-qt-plus'), t = ptEl('pt-qt-tag');
+  if(b) b.hidden = true;
+  if(t) t.hidden = true;
+}
+// y(차트 위쪽 기준 px)에 + 버튼을 놓음. 가격은 그 높이의 가격(0.01 단위, 차트 가격표시와 같은 자릿수)
+function ptQuickShowPlus(y, g, withTag){
+  let price = null;
+  try{ price = ptChart.candle.coordinateToPrice(y); }catch(e){}
+  if(!(price > 0) || !isFinite(price)){ ptQuickHidePlus(); return; }
+  price = Math.round(price * 100) / 100;
+  if(!(price > 0)){ ptQuickHidePlus(); return; }
+  ptQuickHover = { y:y, price:price };
+  const btn = ptEl('pt-qt-plus'), tag = ptEl('pt-qt-tag');
+  const top = Math.max(2, Math.min(g.plotH - PT_QUICK_BTN - 2, Math.round(y - PT_QUICK_BTN / 2)));
+  btn.style.top = top + 'px';
+  btn.style.left = Math.max(0, Math.round(g.w - g.axisW - PT_QUICK_BTN - 6)) + 'px';
+  btn.title = formatPrice(price) + ' 에 지정가 주문';
+  btn.setAttribute('aria-label', formatPrice(price) + ' 에 지정가 주문 걸기 (빠른 거래)');
+  btn.hidden = false;
+  if(withTag){
+    tag.textContent = formatPrice(price);
+    tag.style.top = top + 'px';
+    tag.style.right = Math.round(g.axisW + PT_QUICK_BTN + 12) + 'px';
+    tag.hidden = false;
+  }else tag.hidden = true;
+}
+function ptQuickPlusClick(){
+  const hv = ptQuickHover;
+  if(!hv || !ptQuickPrefs.on) return;
+  ptQuickOpen(hv.y, hv.price);
+}
+function ptQuickInsideUi(t){
+  return !!(t && t.closest && t.closest('#pt-qt-plus, #pt-qt-card'));
+}
+function ptQuickOnMouseMove(e){
+  if(Date.now() - ptQuickLastTouch < 800) return;   // 터치 뒤에 브라우저가 따라 보내는 가짜 마우스 이벤트는 무시
+  if(!ptQuickPrefs.on || ptChartState !== 'ready' || !ptChart || ptDrag || ptQuick){ ptQuickHidePlus(); return; }
+  if(ptQuickInsideUi(e.target)) return;             // + 위에 올라가 있는 동안엔 따라다니지 않음 (눌러야 하니까)
+  if(e.buttons){ ptQuickHidePlus(); return; }       // 차트를 끌어서 옮기는 중
+  const host = ptEl('paper-chart');
+  const g = ptQuickGeom();
+  const x = e.clientX - g.r.left, y = e.clientY - g.r.top;
+  if(x < 0 || x > g.w || y < 0 || y > g.plotH){ ptQuickHidePlus(); return; }
+  if(ptFindOrderLineAt(host, e.clientX, e.clientY, PT_DRAG_HIT_MOUSE)){ ptQuickHidePlus(); return; }   // 주문선을 끌 수 있는 자리엔 + 를 안 띄움
+  ptQuickShowPlus(y, g, false);
+}
+let ptQuickBound = false;
+function ptQuickBind(){
+  const host = ptEl('paper-chart');
+  const stage = host && host.parentElement;
+  if(!stage || ptQuickBound) return;
+  ptQuickBound = true;
+  stage.addEventListener('mousemove', ptQuickOnMouseMove, true);
+  stage.addEventListener('mouseleave', function(e){
+    if(Date.now() - ptQuickLastTouch < 800) return;   // 터치 직후 브라우저가 만들어 보내는 mouseleave 는 무시 (탭으로 띄운 +가 바로 사라지지 않게)
+    if(ptQuickInsideUi(e.relatedTarget)) return;
+    if(!ptQuick) ptQuickHidePlus();
+  });
+  // 터치: 한 손가락으로 짧게 탭하면 그 높이에 + 와 가격이 뜸 (끌면 차트 이동이므로 무시)
+  let tap = null;
+  stage.addEventListener('touchstart', function(e){
+    ptQuickLastTouch = Date.now();
+    tap = null;
+    if(e.touches.length !== 1 || ptQuickInsideUi(e.target)) return;
+    const t = e.touches[0];
+    if(ptDrag || (ptChartState === 'ready' && ptFindOrderLineAt(host, t.clientX, t.clientY, PT_DRAG_HIT_TOUCH))) return;
+    tap = { x:t.clientX, y:t.clientY, at:Date.now() };
+  }, { capture:true, passive:true });
+  stage.addEventListener('touchmove', function(e){
+    ptQuickLastTouch = Date.now();
+    if(!tap) return;
+    const t = e.touches[0];
+    if(!t || Math.abs(t.clientX - tap.x) > 8 || Math.abs(t.clientY - tap.y) > 8){ tap = null; if(!ptQuick) ptQuickHidePlus(); }
+  }, { capture:true, passive:true });
+  stage.addEventListener('touchend', function(e){
+    ptQuickLastTouch = Date.now();
+    const t0 = tap; tap = null;
+    if(!t0 || e.touches.length > 0 || Date.now() - t0.at > 500) return;
+    if(!ptQuickPrefs.on || ptChartState !== 'ready' || !ptChart || ptDrag || ptQuick) return;
+    const g = ptQuickGeom();
+    const y = t0.y - g.r.top;
+    if(y < 0 || y > g.plotH) return;
+    ptQuickShowPlus(y, g, true);
+    clearTimeout(ptQuickTagTimer);
+    ptQuickTagTimer = setTimeout(function(){ if(!ptQuick) ptQuickHidePlus(); }, 6000);
+  }, { capture:true, passive:true });
+  // 카드·+ 밖을 누르면 카드를 닫음
+  document.addEventListener('pointerdown', function(e){
+    if(ptQuick && !ptQuickInsideUi(e.target)) ptQuickClose();
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && ptQuick) ptQuickClose();
+  });
+  window.addEventListener('resize', function(){ if(ptQuick) ptQuickPlace(true); });
+}
+// 카드를 + 가 있던 높이 옆에 놓되 차트 안에서 벗어나지 않게
+function ptQuickPlace(keepTop){
+  const q = ptQuick, card = ptEl('pt-qt-card'), host = ptEl('paper-chart');
+  if(!q || !card || !host || card.hidden) return;
+  const g = ptQuickGeom();
+  const stageW = g.w, stageH = g.h;
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let left = g.w - g.axisW - PT_QUICK_BTN - 14 - cw;
+  left = Math.max(8, Math.min(left, stageW - cw - 8));
+  let top = keepTop && q.top !== undefined ? q.top : q.y - ch / 2;
+  top = Math.max(6, Math.min(top, stageH - ch - 6));
+  if(q.top === undefined || !keepTop) q.top = top;
+  card.style.left = Math.round(left) + 'px';
+  card.style.top = Math.round(top) + 'px';
+}
+function ptQuickOpen(y, price){
+  if(!ptQuickPrefs.on || ptChartState !== 'ready') return;
+  const acc = getCurrentPaperAccount();
+  ptQuick = { accId:acc.id, side:ptQuickSideFor(price), y:y };
+  ptEl('pt-qt-price').value = String(price);
+  ptEl('pt-qt-amount').value = '';
+  ptEl('pt-qt-card').hidden = false;
+  ptQuickHidePlus();
+  renderPtQuickUi();
+  ptQuickRender();
+  ptQuickPlace(false);
+  // 폰·태블릿(터치)에서는 자동으로 키보드를 띄우지 않음: 키보드가 카드 아래쪽(수량 칸·주문 버튼)을 가릴 수 있어서, 직접 칸을 눌렀을 때 브라우저가 알아서 화면을 맞추게 함
+  let coarse = false;
+  try{ coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }catch(err){}
+  if(!coarse){
+    const am = ptEl('pt-qt-amount');
+    try{ am.focus({ preventScroll:true }); }catch(err){ am.focus(); }
+  }
+}
+function ptQuickClose(){
+  ptQuick = null;
+  const card = ptEl('pt-qt-card');
+  if(card) card.hidden = true;
+  ptSetChartLine('pvQuick', 0);
+}
+// 입력칸의 가격·수량. 수량(BTC) 단위면 증거금 = 수량 × 가격 ÷ 레버리지
+function ptQuickRead(){
+  const acc = getCurrentPaperAccount();
+  const pv = parseFloat(ptEl('pt-qt-price').value), av = parseFloat(ptEl('pt-qt-amount').value);
+  const price = (isFinite(pv) && pv > 0) ? pv : null;
+  const amount = (isFinite(av) && av > 0) ? av : null;
+  let margin = null;
+  if(amount && price) margin = ptQuickPrefs.unit === 'qty' ? amount * price / acc.leverage : amount;
+  return { acc:acc, price:price, amount:amount, margin:margin };
+}
+// 가격을 직접 고친 경우에만 방향을 다시 정함 (시세가 움직일 때 매수가 매도로 저절로 바뀌지 않게)
+function ptQuickOnPrice(){
+  if(!ptQuick) return;
+  ptQuick.side = ptQuickSideFor(ptQuickRead().price);
+  ptQuickRender();
+}
+function setPtQuickUnit(u){
+  if(u !== 'qty' && u !== 'margin') return;
+  if(u === ptQuickPrefs.unit) return;
+  const r = ptQuick ? ptQuickRead() : null;   // 바꾸기 전 단위 기준으로 읽음
+  ptQuickPrefs.unit = u;
+  savePtQuickPrefs();
+  renderPtQuickUi();
+  if(ptQuick){
+    const am = ptEl('pt-qt-amount');
+    if(r && r.margin && r.price){
+      if(u === 'qty'){ const q = Math.floor(r.margin * r.acc.leverage / r.price * 1e6) / 1e6; am.value = q > 0 ? String(q) : ''; }
+      else am.value = String(Math.round(r.margin * 100) / 100);
+    }else am.value = '';
+    ptQuickRender();
+  }
+}
+// 사용 가능 잔고(지정가 수수료 포함)의 25/50/75/100%
+function setPtQuickPercent(pct){
+  if(!ptQuick) return;
+  const r = ptQuickRead();
+  const maxM = r.acc.balance / (1 + r.acc.leverage * PT_MAKER_FEE);
+  const m = Math.floor(maxM * pct / 100 * 100) / 100;
+  if(!(m > 0)){ showToast('사용 가능한 잔고가 없어요.'); return; }
+  const am = ptEl('pt-qt-amount');
+  if(ptQuickPrefs.unit === 'qty'){
+    if(!r.price){ showToast('가격을 먼저 입력해주세요.'); return; }
+    const q = Math.floor(m * r.acc.leverage / r.price * 1e6) / 1e6;
+    am.value = q > 0 ? String(q) : '';
+  }else am.value = String(m);
+  ptQuickRender();
+}
+function ptQuickRender(){
+  const q = ptQuick;
+  if(!q) return;
+  const acc = getCurrentPaperAccount();
+  if(acc.id !== q.accId){ ptQuickClose(); return; }
+  const cur = ptBtc.price;
+  const r = ptQuickRead();
+  const side = q.side;
+  const unit = ptQuickPrefs.unit;
+  const title = ptEl('pt-qt-title');
+  title.textContent = side === 'long' ? '지정가 매수 (롱)' : (side === 'short' ? '지정가 매도 (숏)' : '지정가 주문');
+  title.className = 'pt-qt-title' + (side ? ' ' + side : '');
+  const sub = ptEl('pt-qt-pricepct');
+  if(cur && r.price){
+    const pct = (r.price / cur - 1) * 100;
+    sub.textContent = '현재가 ' + formatPrice(cur) + ' 대비 ' + ptPct(pct);
+  }else sub.textContent = cur ? '' : '현재가를 불러오는 중이에요...';
+  ptEl('pt-qt-avail').textContent = '사용 가능 ' + ptMoney(acc.balance) + ' USDT · ' + ptLev(acc.leverage) + ' · ' + (ptMode(acc) === 'cross' ? '교차' : '격리') + ' · 지정가 수수료 ' + (PT_MAKER_FEE * 100).toFixed(2) + '%';
+  const hint = function(t){ return '<div class="chart-hint" style="margin-top:0;">' + escapeHtml(t) + '</div>'; };
+  const warn = function(t){ return '<div class="pt-preview-warn" style="margin-top:0;">' + escapeHtml(t) + '</div>'; };
+  const row = function(l, v){ return '<div class="pt-preview-row"><span>' + l + '</span><span>' + v + '</span></div>'; };
+  let html = '', can = false;
+  if(!cur) html = hint('BTC 시세를 불러오는 중이에요...');
+  else if(!r.price) html = hint('가격을 입력해주세요.');
+  else if(!side) html = warn('현재가와 같은 가격이에요. 지정가는 현재가보다 낮거나(매수) 높은(매도) 가격이어야 해요. 바로 체결하려면 주문 패널의 시장가를 이용해주세요.');
+  else{
+    const conflict = ptSideConflictMsg(acc, side);
+    if(conflict) html = warn(conflict) + (acc.position ? hint('같은 방향(' + (acc.position.side === 'long' ? '현재가보다 낮은 가격의 매수' : '현재가보다 높은 가격의 매도') + ') 지정가만 걸 수 있어요. 익절은 포지션의 익절가로 정해주세요.') : '');
+    else if(!r.margin) html = hint(unit === 'qty' ? '수량(BTC)을 입력하면 필요한 증거금과 청산가를 보여줘요.' : '증거금(USDT)을 입력하면 수량과 청산가를 보여줘요.');
+    else{
+      const res = ptSubmitOrder({ side:side, isLimit:true, margin:r.margin, limit:r.price, dryRun:true });
+      if(!res.ok) html = warn(res.msg);
+      else{
+        const i = res.info;
+        can = true;
+        html = row('수량', ptQty(i.qty) + ' BTC') + row('증거금', ptMoney(r.margin) + ' USDT') + row('포지션 크기', ptMoney(i.notional) + ' USDT') +
+          row('진입 수수료', ptMoney(i.fee) + ' USDT') +
+          row('예상 청산가', ptLiqText(i.liq) + (i.merged ? ' <span style="font-weight:500;color:var(--ink-dim);">(합산 후)</span>' : ''));
+        if(i.beyond) html += warn('손절가(' + formatPrice(i.beyond) + ')보다 ' + (side === 'long' ? '아래' : '위') + '라서, 가격이 움직이면 손절이 먼저 일어나요.');
+        if(i.ladderFlag) html += warn('앞선 체결로 생길 포지션의 청산가보다 ' + (side === 'long' ? '아래' : '위') + '에 있어요. 그 가격에 닿기 전에 청산되면 청산 뒤 새 포지션으로 체결돼요.');
+        if(acc.leverage >= 50) html += warn('레버리지 ' + acc.leverage + 'x는 ' + (100 / acc.leverage).toFixed(2) + '%만 움직여도 큰 손익이 나요.');
+      }
+    }
+  }
+  ptEl('pt-qt-body').innerHTML = html;
+  const btn = ptEl('pt-qt-submit');
+  btn.disabled = !can;
+  btn.textContent = side === 'long' ? '지정가 매수 걸기' : (side === 'short' ? '지정가 매도 걸기' : '지정가 주문 걸기');
+  btn.className = 'pt-qt-submit' + (side ? ' ' + side : '');
+  ptSetChartLine('pvQuick', r.price || 0, '빠른 거래' + (side ? (side === 'long' ? ' 매수' : ' 매도') : '') + ' (입력)', PT_LINE_COLORS.drag, 1);
+  ptQuickPlace(true);
+}
+function ptQuickSubmit(){
+  const q = ptQuick;
+  if(!q) return;
+  const r = ptQuickRead();
+  if(!q.side || !r.price || !r.margin){ ptQuickRender(); return; }
+  const res = ptSubmitOrder({ side:q.side, isLimit:true, margin:r.margin, limit:r.price });
+  if(!res.ok){ ptQuickRender(); showToast(res.msg); return; }
+  ptQuickClose();
+  showToast(res.msg);
+}
+
+// ---------- 체결음 (브라우저에서 직접 만드는 소리, 파일 없음) ----------
+let ptSoundPrefs = (function(){
+  const saved = loadLocal('ptSoundPrefs', null) || {};
+  const v = (typeof saved.vol === 'number' && isFinite(saved.vol) && saved.vol >= 0 && saved.vol <= 1) ? saved.vol : 0.7;
+  return { on: saved.on !== false, vol: v };
+})();
+let ptAudioCtx = null;
+let ptAudioPrimed = false;
+let ptSoundLastAt = 0;
+const PT_SOUND_MIN_GAP = 150;   // ms. 한 번의 처리에서 여러 건이 체결돼도 소리는 한 번만
+// 맑고 높은 '띵-띵' 두 음 (E6 → B6, 완전5도 상승). 종소리처럼 들리도록 배음을 살짝 섞고 빠르게 줄어듦
+const PT_SOUND_NOTES = [ { f:1318.51, at:0, len:0.30 }, { f:1975.53, at:0.085, len:0.34 } ];
+const PT_SOUND_PARTIALS = [ [1, 1], [2, 0.28], [2.76, 0.10] ];   // [배음 배수, 상대 크기]
+const PT_SOUND_PEAK = 0.36;     // 볼륨 100%일 때 한 음의 최대 진폭(0~1) — 두 음이 겹쳐도 1을 넘지 않게
+// ctx(실제 또는 Offline) 위에서 t0 시각부터 소리를 예약하고 끝나는 시각을 돌려줌
+function ptSynthFill(ctx, dest, t0, vol){
+  const peak = PT_SOUND_PEAK * Math.max(0, Math.min(1, vol));
+  if(!(peak > 0)) return t0;
+  const norm = PT_SOUND_PARTIALS.reduce(function(a, h){ return a + h[1]; }, 0);
+  let end = t0;
+  PT_SOUND_NOTES.forEach(function(n){
+    const start = t0 + n.at;
+    const stop = start + n.len;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.linearRampToValueAtTime(peak, start + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, stop);
+    g.connect(dest);
+    PT_SOUND_PARTIALS.forEach(function(h, i){
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(n.f * h[0], start);
+      const pg = ctx.createGain();
+      pg.gain.setValueAtTime(h[1] / norm, start);
+      o.connect(pg);
+      pg.connect(g);
+      o.start(start);
+      o.stop(stop + 0.02);
+      if(i === PT_SOUND_PARTIALS.length - 1) o.onended = function(){ try{ g.disconnect(); }catch(e){} };
+    });
+    end = Math.max(end, stop + 0.02);
+  });
+  return end;
+}
+// 사용자가 화면을 처음 누르거나 건드릴 때 오디오를 깨움 (브라우저는 그 전에는 소리를 막음. iOS는 이때 한 번 소리를 내야 이후에 재생됨)
+function ptAudioUnlock(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return false;
+  try{
+    if(!ptAudioCtx) ptAudioCtx = new AC();
+    if(ptAudioCtx.state !== 'running') ptAudioCtx.resume();
+    if(!ptAudioPrimed){
+      const src = ptAudioCtx.createBufferSource();
+      src.buffer = ptAudioCtx.createBuffer(1, 1, 22050);
+      src.connect(ptAudioCtx.destination);
+      src.start(0);
+      ptAudioPrimed = true;
+    }
+    return true;
+  }catch(e){ return false; }
+}
+function ptPlayFillSoundNow(force){
+  if(!force && !(ptSoundPrefs.on && ptSoundPrefs.vol > 0)) return false;
+  if(!ptAudioCtx) return false;
+  const ctx = ptAudioCtx;
+  const vol = ptSoundPrefs.vol;
+  if(ctx.state === 'running'){
+    ptSynthFill(ctx, ctx.destination, ctx.currentTime + 0.01, vol);
+    return true;
+  }
+  // 멈춰 있으면 깨워 보고, 곧바로 깨어난 경우에만 재생(한참 뒤에 늦게 울리지 않게)
+  let pr = null;
+  try{ pr = ctx.resume(); }catch(e){}
+  if(pr && pr.then){
+    const asked = Date.now();
+    pr.then(function(){ if(ctx.state === 'running' && Date.now() - asked < 1500) ptSynthFill(ctx, ctx.destination, ctx.currentTime + 0.01, vol); }).catch(function(){});
+  }
+  return false;
+}
+// 체결 훅: 켜져 있고, 직전 소리와 충분히 떨어져 있을 때만 울림
+function ptOnExecution(){
+  if(!ptSoundPrefs.on || !(ptSoundPrefs.vol > 0)) return;
+  const now = Date.now();
+  if(now - ptSoundLastAt < PT_SOUND_MIN_GAP) return;
+  ptSoundLastAt = now;
+  ptPlayFillSoundNow(false);
+}
+ptExecutionHook = ptOnExecution;
+function savePtSoundPrefs(){ saveLocalQuiet('ptSoundPrefs', ptSoundPrefs); }
+function renderPtSoundUi(){
+  const btn = ptEl('pt-ind-sound');
+  if(btn){ btn.classList.toggle('active', !!ptSoundPrefs.on); btn.setAttribute('aria-pressed', String(!!ptSoundPrefs.on)); }
+  const sw = ptEl('settings-ptsound');
+  if(sw) sw.checked = !!ptSoundPrefs.on;
+  const pct = Math.round(ptSoundPrefs.vol * 100);
+  const sl = ptEl('settings-ptsound-vol'), disp = ptEl('settings-ptsound-vol-display');
+  if(sl && document.activeElement !== sl) sl.value = String(pct);
+  if(disp) disp.textContent = pct + '%';
+}
+function setPtSoundOn(on){
+  ptSoundPrefs.on = !!on;
+  savePtSoundPrefs();
+  renderPtSoundUi();
+  if(ptSoundPrefs.on){ ptAudioUnlock(); testPtSound(); }
+}
+function togglePtSound(){ setPtSoundOn(!ptSoundPrefs.on); }
+function setPtSoundVolume(v){
+  const n = parseFloat(v);
+  if(!isFinite(n)) return;
+  ptSoundPrefs.vol = Math.max(0, Math.min(100, n)) / 100;
+  savePtSoundPrefs();
+  renderPtSoundUi();
+}
+// 설정에서 '들어보기'·켤 때·볼륨을 놓을 때: 켜짐 여부와 상관없이 지금 볼륨으로 한 번 울림(소리 간격 제한도 무시)
+function testPtSound(){
+  if(!ptAudioUnlock()){ showToast('이 브라우저에서는 소리를 낼 수 없어요.'); return; }
+  if(!(ptSoundPrefs.vol > 0)){ showToast('볼륨이 0%예요. 볼륨을 올려주세요.'); return; }
+  ptSoundLastAt = Date.now();
+  ptPlayFillSoundNow(true);
+}
+['pointerdown', 'pointerup', 'click', 'keydown', 'touchend'].forEach(function(ev){
+  document.addEventListener(ev, function(){ if(ptSoundPrefs.on && (!ptAudioCtx || ptAudioCtx.state !== 'running')) ptAudioUnlock(); }, { capture:true, passive:true });
+});
 
 // ---------- 라이브러리 불러오기 / 시작 ----------
 function ptLoadLightweightCharts(){
@@ -5842,6 +7645,9 @@ function ptNudgeChartResize(){
 }
 function ptDestroyBuiltinChart(){
   ptKlineDisconnect();
+  ptQuickClose();
+  ptQuickHidePlus();
+  if(ptDrag){ ptDrag.host.classList.remove('pt-dragging'); ptDrag = null; }
   ptChartLines = {};
   if(ptChart && ptChart.chart){ try{ ptChart.chart.remove(); }catch(e){} }
   ptChart = null;
@@ -6032,9 +7838,27 @@ if(selectedSymbol){ updateDetailPrice(); loadTradingViewChart(selectedSymbol); }
 startPolling();
 connectWebSocket();
 normalizePaperAccounts();
+renderPtSoundUi();
+ptRiskInit();
 updateMarketNavLabel();
 if(paperTradingActive || ptHasOpenOrders()) startPtFeed();
 renderPaperTrading();
+// 같은 앱을 다른 창·탭에서도 열어 둔 경우: 다른 창이 계좌를 바꾸면 이 창도 그 내용으로 맞춤
+// (안 그러면 이 창의 옛 목록이 나중에 저장되면서 새로 만든 계좌를 지워버림)
+window.addEventListener('storage', function(e){
+  if(e.storageArea !== localStorage || e.key !== 'coinstudy_paperAccounts' || !e.newValue) return;
+  if(memoryStore.paperAccounts !== undefined) return;   // 이 창에 저장 못 한 최신 변경이 있으면 덮어쓰지 않음
+  try{
+    const arr = JSON.parse(e.newValue);
+    if(!Array.isArray(arr) || arr.length === 0) return;
+    paperAccounts = arr;
+    normalizePaperAccounts();
+    ptTpslDirty = false;
+    renderPaperTrading();
+    if(ptHasOpenOrders()) startPtFeed();
+    showToast('다른 창에서 바뀐 모의투자 계좌를 불러왔어요.');
+  }catch(err){ console.warn('[storage sync]', err); }
+});
 </script>
 </body>
 </html>
